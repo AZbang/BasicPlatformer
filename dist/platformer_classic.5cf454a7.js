@@ -41716,7 +41716,7 @@ var Menu = function (_PIXI$Container) {
 
     var _this = _possibleConstructorReturn(this, (Menu.__proto__ || Object.getPrototypeOf(Menu)).call(this));
 
-    _this.label = new PIXI.Text('Hello World!', { fontFamily: 'Arial', fontSize: 24, fill: 0xff1010, align: 'center' });
+    _this.label = new PIXI.Text('Hello World!', { fontFamily: 'Bebas Neue', fontSize: 72, fill: 0xff1010, align: 'center' });
     _this.label.anchor.set(.5);
     _this.label.x = scenes.world.screen.width / 2;
     _this.label.y = scenes.world.screen.height / 2;
@@ -41738,7 +41738,7 @@ var Menu = function (_PIXI$Container) {
 }(PIXI.Container);
 
 exports.default = Menu;
-},{"pixi.js":"node_modules\\pixi.js\\lib\\index.js"}],"src\\scenes\\Playground.js":[function(require,module,exports) {
+},{"pixi.js":"node_modules\\pixi.js\\lib\\index.js"}],"src\\managers\\Camera.js":[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -41759,37 +41759,416 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+var Camera = function (_PIXI$Container) {
+  _inherits(Camera, _PIXI$Container);
+
+  function Camera() {
+    _classCallCheck(this, Camera);
+
+    return _possibleConstructorReturn(this, (Camera.__proto__ || Object.getPrototypeOf(Camera)).call(this));
+  }
+
+  _createClass(Camera, [{
+    key: 'update',
+    value: function update(dt) {}
+  }]);
+
+  return Camera;
+}(PIXI.Container);
+
+exports.default = Camera;
+},{"pixi.js":"node_modules\\pixi.js\\lib\\index.js"}],"src\\managers\\TileMap.js":[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _pixi = require('pixi.js');
+
+var PIXI = _interopRequireWildcard(_pixi);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var TileMap = function (_PIXI$Container) {
+  _inherits(TileMap, _PIXI$Container);
+
+  function TileMap(scene, data) {
+    _classCallCheck(this, TileMap);
+
+    return _possibleConstructorReturn(this, (TileMap.__proto__ || Object.getPrototypeOf(TileMap)).call(this));
+  }
+
+  _createClass(TileMap, [{
+    key: 'update',
+    value: function update(dt) {}
+  }]);
+
+  return TileMap;
+}(PIXI.Container);
+
+exports.default = TileMap;
+},{"pixi.js":"node_modules\\pixi.js\\lib\\index.js"}],"src\\utils\\index.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = {
+  checkRectsCollision: function checkRectsCollision(a, b) {}
+};
+},{}],"src\\entities\\Entity.js":[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _pixi = require('pixi.js');
+
+var PIXI = _interopRequireWildcard(_pixi);
+
+var _utils = require('../utils');
+
+var _utils2 = _interopRequireDefault(_utils);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Entity = function (_PIXI$Sprite) {
+  _inherits(Entity, _PIXI$Sprite);
+
+  function Entity(manager, x, y, w, h, properties) {
+    _classCallCheck(this, Entity);
+
+    var _this = _possibleConstructorReturn(this, (Entity.__proto__ || Object.getPrototypeOf(Entity)).call(this, PIXI.Texture.WHITE));
+
+    Object.assign(_this, properties);
+
+    _this.manager = manager;
+    _this.x = x;
+    _this.y = y;
+    _this.width = w;
+    _this.height = h;
+
+    _this.dx = 0;
+    _this.dy = 0;
+    return _this;
+  }
+
+  _createClass(Entity, [{
+    key: 'update',
+    value: function update(dt) {
+      this.x += this.dx;
+      this.y += this.dy;
+
+      for (var i = 0; i < this.manager.objects.length; i++) {
+        var obj = this.manager.objects[i];
+        if (_utils2.default.checkRectsCollision(this, obj)) {
+          switch (obj.name) {
+            case 'solid':
+
+              break;
+            case 'jump':
+
+              break;
+            case 'slopeRight':
+
+              break;
+            case 'slopeLeft':
+
+              break;
+          }
+          this.onCollide(obj);
+        }
+      }
+      this.updateBehavior(dt);
+    }
+  }]);
+
+  return Entity;
+}(PIXI.Sprite);
+
+exports.default = Entity;
+},{"pixi.js":"node_modules\\pixi.js\\lib\\index.js","../utils":"src\\utils\\index.js"}],"src\\entities\\Player.js":[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Entity2 = require('./Entity');
+
+var _Entity3 = _interopRequireDefault(_Entity2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Player = function (_Entity) {
+  _inherits(Player, _Entity);
+
+  function Player(objects, x, y, w, h, properties) {
+    _classCallCheck(this, Player);
+
+    return _possibleConstructorReturn(this, (Player.__proto__ || Object.getPrototypeOf(Player)).call(this, objects, x, y, w, h, properties));
+  }
+
+  _createClass(Player, [{
+    key: 'updateBehavior',
+    value: function updateBehavior() {}
+  }, {
+    key: 'onCollide',
+    value: function onCollide(obj) {}
+  }]);
+
+  return Player;
+}(_Entity3.default);
+
+exports.default = Player;
+},{"./Entity":"src\\entities\\Entity.js"}],"src\\entities\\Slime.js":[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Entity2 = require('./Entity');
+
+var _Entity3 = _interopRequireDefault(_Entity2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Slime = function (_Entity) {
+  _inherits(Slime, _Entity);
+
+  function Slime(objects, x, y, w, h, properties) {
+    _classCallCheck(this, Slime);
+
+    return _possibleConstructorReturn(this, (Slime.__proto__ || Object.getPrototypeOf(Slime)).call(this, objects, x, y, w, h, properties));
+  }
+
+  _createClass(Slime, [{
+    key: 'updateBehavior',
+    value: function updateBehavior(dt) {}
+  }, {
+    key: 'onCollide',
+    value: function onCollide(obj) {}
+  }]);
+
+  return Slime;
+}(_Entity3.default);
+
+exports.default = Slime;
+},{"./Entity":"src\\entities\\Entity.js"}],"src\\entities\\index.js":[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _Player = require('./Player');
+
+var _Player2 = _interopRequireDefault(_Player);
+
+var _Slime = require('./Slime');
+
+var _Slime2 = _interopRequireDefault(_Slime);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = {
+  'player': _Player2.default,
+  'slime': _Slime2.default
+};
+},{"./Player":"src\\entities\\Player.js","./Slime":"src\\entities\\Slime.js"}],"src\\managers\\EntitiesManager.js":[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _entities = require('../entities');
+
+var _entities2 = _interopRequireDefault(_entities);
+
+var _pixi = require('pixi.js');
+
+var PIXI = _interopRequireWildcard(_pixi);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var EntitiesManager = function (_PIXI$Container) {
+  _inherits(EntitiesManager, _PIXI$Container);
+
+  function EntitiesManager(level, data) {
+    _classCallCheck(this, EntitiesManager);
+
+    var _this = _possibleConstructorReturn(this, (EntitiesManager.__proto__ || Object.getPrototypeOf(EntitiesManager)).call(this));
+
+    _this.level = level;
+    _this.objects = [];
+
+    data.layers.forEach(function (layer) {
+      if (layer.type === 'objectgroup') {
+        layer.objects.forEach(function (obj) {
+          if (obj.type === 'spawn') {
+            var entity = new _entities2.default[obj.name](_this, obj.x, obj.y, obj.properties);
+            _this.objects.push(entity);
+            _this.addChild(entity);
+          } else if (obj.type === 'area') {
+            var rect = new PIXI.Rectangle(obj.x, obj.y, obj.width, obj.height);
+            Object.assign(rect, obj.properties);
+            _this.objects.push(rect);
+          }
+        });
+      }
+    });
+    return _this;
+  }
+
+  _createClass(EntitiesManager, [{
+    key: 'update',
+    value: function update(dt) {
+      for (var i = 0; i < this.children.length; i++) {
+        this.children[i].update(dt);
+      }
+    }
+  }]);
+
+  return EntitiesManager;
+}(PIXI.Container);
+
+exports.default = EntitiesManager;
+},{"../entities":"src\\entities\\index.js","pixi.js":"node_modules\\pixi.js\\lib\\index.js"}],"src\\scenes\\Playground.js":[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _pixi = require('pixi.js');
+
+var PIXI = _interopRequireWildcard(_pixi);
+
+var _Camera = require('../managers/Camera');
+
+var _Camera2 = _interopRequireDefault(_Camera);
+
+var _TileMap = require('../managers/TileMap');
+
+var _TileMap2 = _interopRequireDefault(_TileMap);
+
+var _EntitiesManager = require('../managers/EntitiesManager');
+
+var _EntitiesManager2 = _interopRequireDefault(_EntitiesManager);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
 var Playground = function (_PIXI$Container) {
   _inherits(Playground, _PIXI$Container);
 
   function Playground(scenes) {
+    var level = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
+
     _classCallCheck(this, Playground);
 
     var _this = _possibleConstructorReturn(this, (Playground.__proto__ || Object.getPrototypeOf(Playground)).call(this));
 
-    _this.label = new PIXI.Text('Play, bitch!', { fontFamily: 'Arial', fontSize: 24, fill: 0xff1010, align: 'center' });
-    _this.label.anchor.set(.5);
-    _this.label.x = scenes.world.screen.width / 2;
-    _this.label.y = scenes.world.screen.height / 2;
-    _this.label.interactive = true;
-    _this.label.cursor = 'pointer';
-    _this.label.pointertap = function () {
-      scenes.set('menu');
-    };
-    _this.addChild(_this.label);
+    _this.scenes = scenes;
+    _this.world = scenes.world;
+
+    _this.levelCount = level;
+    _this.levelData = PIXI.loader.resources['level' + level].data;
+
+    _this.camera = new _Camera2.default(_this);
+    _this.background = new PIXI.Sprite.fromImage(_this.levelData.properties.background);
+    _this.tilemap = new _TileMap2.default(_this, _this.levelData);
+    _this.entities = new _EntitiesManager2.default(_this, _this.levelData);
+
+    _this.addChild(_this.background);
+    _this.addChild(_this.camera);
+    _this.camera.addChild(_this.tilemap);
+    _this.camera.addChild(_this.entities);
     return _this;
   }
 
   _createClass(Playground, [{
     key: 'update',
-    value: function update() {}
+    value: function update() {
+      this.tilemap.update();
+      this.entities.update();
+      this.camera.update();
+    }
+  }, {
+    key: 'restart',
+    value: function restart() {
+      this.scenes.set('playground', this.levelCount);
+    }
+  }, {
+    key: 'complete',
+    value: function complete() {
+      this.world.storage.set('level', this.levelCount++);
+      this.scenes.set('playground', this.levelCount);
+    }
   }]);
 
   return Playground;
 }(PIXI.Container);
 
 exports.default = Playground;
-},{"pixi.js":"node_modules\\pixi.js\\lib\\index.js"}],"src\\scenes\\index.js":[function(require,module,exports) {
+},{"pixi.js":"node_modules\\pixi.js\\lib\\index.js","../managers/Camera":"src\\managers\\Camera.js","../managers/TileMap":"src\\managers\\TileMap.js","../managers/EntitiesManager":"src\\managers\\EntitiesManager.js"}],"src\\scenes\\index.js":[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -41864,7 +42243,7 @@ var Scenes = function (_PIXI$Container) {
   }, {
     key: 'update',
     value: function update(dt) {
-      this.currentScene && this.currentScene.update();
+      this.currentScene && this.currentScene.update(dt);
     }
   }]);
 
@@ -41872,7 +42251,27 @@ var Scenes = function (_PIXI$Container) {
 }(PIXI.Container);
 
 exports.default = Scenes;
-},{"pixi.js":"node_modules\\pixi.js\\lib\\index.js","../scenes":"src\\scenes\\index.js"}],"src\\World.js":[function(require,module,exports) {
+},{"pixi.js":"node_modules\\pixi.js\\lib\\index.js","../scenes":"src\\scenes\\index.js"}],"src\\managers\\Storage.js":[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _pixi = require('pixi.js');
+
+var PIXI = _interopRequireWildcard(_pixi);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Store = function Store(world) {
+  _classCallCheck(this, Store);
+};
+
+exports.default = Store;
+},{"pixi.js":"node_modules\\pixi.js\\lib\\index.js"}],"src\\World.js":[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -41888,6 +42287,10 @@ var PIXI = _interopRequireWildcard(_pixi);
 var _Scenes = require('./managers/Scenes');
 
 var _Scenes2 = _interopRequireDefault(_Scenes);
+
+var _Storage = require('./managers/Storage');
+
+var _Storage2 = _interopRequireDefault(_Storage);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -41906,7 +42309,7 @@ var World = function (_PIXI$Application) {
     _classCallCheck(this, World);
 
     var _this = _possibleConstructorReturn(this, (World.__proto__ || Object.getPrototypeOf(World)).call(this, {
-      background: 0xCCCCCC,
+      backgroundColor: 0xCCCCCC,
       width: window.innerWidth,
       height: window.innerHeight
     }));
@@ -41914,6 +42317,7 @@ var World = function (_PIXI$Application) {
     document.body.appendChild(_this.view);
 
     _this.scenes = new _Scenes2.default(_this);
+    _this.storage = new _Storage2.default(_this);
     _this.ticker.add(function () {
       return _this.update();
     });
@@ -41931,7 +42335,7 @@ var World = function (_PIXI$Application) {
 }(PIXI.Application);
 
 exports.default = World;
-},{"pixi.js":"node_modules\\pixi.js\\lib\\index.js","./managers/Scenes":"src\\managers\\Scenes.js"}],"index.js":[function(require,module,exports) {
+},{"pixi.js":"node_modules\\pixi.js\\lib\\index.js","./managers/Scenes":"src\\managers\\Scenes.js","./managers/Storage":"src\\managers\\Storage.js"}],"index.js":[function(require,module,exports) {
 'use strict';
 
 var _World = require('./src/World');
@@ -41940,8 +42344,13 @@ var _World2 = _interopRequireDefault(_World);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var world = new _World2.default();
-world.scenes.set('menu');
+PIXI.loader.add('spritesheet_tiles.png', 'assets/spritesheet_tiles.png').add('spritesheet_ground.png', 'assets/spritesheet_ground.png').add('blue_grass.png', 'assets/blue_grass.png').add('assets/spritesheet_players.xml').add('level1', 'assets/level1.json').load(onAssetsLoaded);
+
+function onAssetsLoaded(res) {
+    console.log(res);
+    var world = new _World2.default();
+    world.scenes.set('menu');
+}
 },{"./src/World":"src\\World.js"}],"..\\..\\..\\AppData\\Roaming\\npm\\node_modules\\parcel-bundler\\src\\builtins\\hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -41971,7 +42380,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '55405' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '51850' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 

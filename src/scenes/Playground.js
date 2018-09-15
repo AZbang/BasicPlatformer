@@ -1,21 +1,38 @@
-import * as PIXI from 'pixi.js';
+import * as PIXI from 'pixi.js'
+import Camera from '../managers/Camera'
+import TileMap from '../managers/TileMap'
+import EntitiesManager from '../managers/EntitiesManager'
 
 export default class Playground extends PIXI.Container {
-  constructor(scenes) {
+  constructor(scenes, level=1) {
     super();
 
-    this.label = new PIXI.Text('Play, bitch!', {fontFamily : 'Arial', fontSize: 24, fill : 0xff1010, align : 'center'});
-    this.label.anchor.set(.5);
-    this.label.x = scenes.world.screen.width/2;
-    this.label.y = scenes.world.screen.height/2;
-    this.label.interactive = true;
-    this.label.cursor = 'pointer';
-    this.label.pointertap = () => {
-      scenes.set('menu');
-    }
-    this.addChild(this.label);
+    this.scenes = scenes;
+    this.world = scenes.world;
+
+    this.levelCount = level;
+    this.levelData = PIXI.loader.resources['level' + level].data;
+
+    this.camera = new Camera(this);
+    this.background = new PIXI.Sprite.fromImage(this.levelData.properties.background);
+    this.tilemap = new TileMap(this, this.levelData);
+    this.entities = new EntitiesManager(this, this.levelData);
+
+    this.addChild(this.background);
+    this.addChild(this.camera);
+    this.camera.addChild(this.tilemap);
+    this.camera.addChild(this.entities);
   }
   update() {
-
+    this.tilemap.update();
+    this.entities.update();
+    this.camera.update();
+  }
+  restart() {
+    this.scenes.set('playground', this.levelCount);
+  }
+  complete() {
+    this.world.storage.set('level', this.levelCount++);
+    this.scenes.set('playground', this.levelCount);
   }
 }

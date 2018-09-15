@@ -17,6 +17,6 @@ export default class Scenes extends PIXI.Container {
     this.addChild(this.currentScene);
   }
   update(dt) {
-    this.currentScene && this.currentScene.update();
+    this.currentScene && this.currentScene.update(dt);
   }
 }
