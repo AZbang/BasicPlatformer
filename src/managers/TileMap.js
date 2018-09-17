@@ -6,9 +6,11 @@ export default class TileMap extends PIXI.Container {
 
     this.textures = [];
     data.tilesets.forEach((tileset) => {
+      let texture = PIXI.Texture.fromImage(tileset.image);
+      texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
       for(let y = 0; y < tileset.imageheight/tileset.tileheight; y++) {
         for(let x = 0; x < tileset.columns; x++) {
-          this.textures.push(new PIXI.Texture(PIXI.Texture.fromImage(tileset.image), new PIXI.Rectangle(x*tileset.tilewidth, y*tileset.tileheight, tileset.tilewidth, tileset.tileheight)));
+          this.textures.push(new PIXI.Texture(texture, new PIXI.Rectangle(x*tileset.tilewidth, y*tileset.tileheight, tileset.tilewidth, tileset.tileheight)));
         }
       }
     });

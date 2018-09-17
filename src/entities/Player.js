@@ -12,13 +12,13 @@ export default class Player extends Entity {
     else this.dx = 0;
 
     if(key.isPressed('w') && this.isGround) {
-      this.dy = -30;
+      this.dy = -24;
       this.isGround = false;
     }
     this.manager.level.camera.fallow(this);
   }
   onCollide(obj) {
-    if(obj.name === 'slime') this.manager.level.restart();
+    if(obj.name === 'slime' || obj.name === 'dead') this.manager.level.restart();
     if(obj.name === 'exit') this.manager.level.complete();
   }
 }

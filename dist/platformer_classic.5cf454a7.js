@@ -41773,8 +41773,8 @@ var Camera = function (_PIXI$Container) {
 
   _createClass(Camera, [{
     key: 'fallow',
-    value: function fallow(entity) {
-      this.pivot.copy(entity.position);
+    value: function fallow(obj) {
+      this.pivot.set(obj.x + obj.width / 2, obj.y + obj.height / 2);
     }
   }, {
     key: 'update',
@@ -41816,9 +41816,11 @@ var TileMap = function (_PIXI$Container) {
 
     _this.textures = [];
     data.tilesets.forEach(function (tileset) {
+      var texture = PIXI.Texture.fromImage(tileset.image);
+      texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
       for (var y = 0; y < tileset.imageheight / tileset.tileheight; y++) {
         for (var x = 0; x < tileset.columns; x++) {
-          _this.textures.push(new PIXI.Texture(PIXI.Texture.fromImage(tileset.image), new PIXI.Rectangle(x * tileset.tilewidth, y * tileset.tileheight, tileset.tilewidth, tileset.tileheight)));
+          _this.textures.push(new PIXI.Texture(texture, new PIXI.Rectangle(x * tileset.tilewidth, y * tileset.tileheight, tileset.tilewidth, tileset.tileheight)));
         }
       }
     });
@@ -41912,19 +41914,27 @@ var Entity = function (_PIXI$Sprite) {
       this.dy += this.manager.level.gravity * dt;
 
       this.x += this.dx * dt;
-      this.checkCollision(0);
+      this.checkCollisionAreas(0);
 
       this.y += this.dy * dt;
-      this.checkCollision(1);
-
+      this.checkCollisionAreas(1);
+      this.checkCollisionEntities();
       this.updateBehavior(dt);
     }
   }, {
-    key: 'checkCollision',
-    value: function checkCollision(dir) {
+    key: 'checkCollisionEntities',
+    value: function checkCollisionEntities() {
+      for (var i = 0; i < this.manager.children.length; i++) {
+        var entity = this.manager.children[i];
+        if (entity.name === this.name) continue;
+        if (_utils2.default.checkRectsCollision(this, entity)) this.onCollide(entity);
+      }
+    }
+  }, {
+    key: 'checkCollisionAreas',
+    value: function checkCollisionAreas(dir) {
       for (var i = 0; i < this.manager.objects.length; i++) {
         var obj = this.manager.objects[i];
-        if (obj.name === this.name) continue;
         if (_utils2.default.checkRectsCollision(this, obj)) {
           switch (obj.name) {
             case 'solid':
@@ -41945,10 +41955,12 @@ var Entity = function (_PIXI$Sprite) {
               }
               break;
             case 'jump':
-              if (this.isGround) this.dy = -10;
+              if (this.isGround) this.dy = -45;
               break;
             case 'slopeRight':
-
+              var dtX = obj.x - (this.x + this.width);
+              var dtY = Math.abs(obj.height * dtX / obj.width);
+              if (this.y > obj.y + obj.height - dtY - this.height) this.y = obj.y + obj.height - dtY - this.height;
               break;
             case 'slopeLeft':
 
@@ -42321,7 +42333,7 @@ var Player = function (_Entity) {
       if (_keymaster2.default.isPressed('d')) this.dx = 10;else if (_keymaster2.default.isPressed('a')) this.dx = -10;else this.dx = 0;
 
       if (_keymaster2.default.isPressed('w') && this.isGround) {
-        this.dy = -30;
+        this.dy = -24;
         this.isGround = false;
       }
       this.manager.level.camera.fallow(this);
@@ -42329,7 +42341,7 @@ var Player = function (_Entity) {
   }, {
     key: 'onCollide',
     value: function onCollide(obj) {
-      if (obj.name === 'slime') this.manager.level.restart();
+      if (obj.name === 'slime' || obj.name === 'dead') this.manager.level.restart();
       if (obj.name === 'exit') this.manager.level.complete();
     }
   }]);
@@ -42369,24 +42381,28 @@ var Slime = function (_Entity) {
 
     _this.texture = PIXI.Texture.fromFrame('slimeGreen.png');
 
+    _this.dir = -3;
     return _this;
   }
 
   _createClass(Slime, [{
     key: 'updateBehavior',
     value: function updateBehavior(dt) {
-      if (this.isGround) this.dx = 3;else this.dx = 0;
+      if (this.isGround) this.dx = this.dir;else this.dx = 0;
     }
   }, {
     key: 'onCollide',
     value: function onCollide(obj) {
-      if (obj.name === 'edge') {
-        this.dx = -this.dx;
-        this.scale.x *= -1;
+      if (obj.name === 'edgeLeft') {
+        this.dir = 3;
+        this.scale.x = -1;
+        this.x += this.width;
+      } else if (obj.name === 'edgeRight') {
+        this.dir = -3;
+        this.scale.x = 1;
+        this.x -= this.width;
       }
-      if (obj.name === 'dead') {
-        this.manager.removeEntity(this);
-      }
+      if (obj.name === 'dead') this.manager.removeEntity(this);
     }
   }]);
 
@@ -42506,7 +42522,7 @@ exports.default = EntitiesManager;
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+    value: true
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -42538,56 +42554,57 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var Playground = function (_PIXI$Container) {
-  _inherits(Playground, _PIXI$Container);
+    _inherits(Playground, _PIXI$Container);
 
-  function Playground(scenes) {
-    var level = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
+    function Playground(scenes) {
+        var level = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
 
-    _classCallCheck(this, Playground);
+        _classCallCheck(this, Playground);
 
-    var _this = _possibleConstructorReturn(this, (Playground.__proto__ || Object.getPrototypeOf(Playground)).call(this));
+        var _this = _possibleConstructorReturn(this, (Playground.__proto__ || Object.getPrototypeOf(Playground)).call(this));
 
-    _this.scenes = scenes;
-    _this.world = scenes.world;
+        _this.scenes = scenes;
+        _this.world = scenes.world;
 
-    _this.levelCount = level;
-    _this.levelData = PIXI.loader.resources['level' + level].data;
+        _this.levelCount = level;
+        _this.levelData = PIXI.loader.resources['level' + level].data;
 
-    _this.gravity = 1;
+        _this.gravity = 1;
 
-    _this.camera = new _Camera2.default(_this);
-    _this.background = new PIXI.Sprite.fromImage(_this.levelData.properties.background);
-    _this.entities = new _EntitiesManager2.default(_this, _this.levelData);
-    _this.tilemap = new _TileMap2.default(_this, _this.levelData);
+        _this.camera = new _Camera2.default(_this);
+        _this.background = new PIXI.extras.TilingSprite(PIXI.Texture.fromImage(_this.levelData.properties.background), _this.world.screen.width, _this.world.screen.height);
+        _this.entities = new _EntitiesManager2.default(_this, _this.levelData);
+        _this.tilemap = new _TileMap2.default(_this, _this.levelData);
 
-    _this.addChild(_this.background);
-    _this.addChild(_this.camera);
-    _this.camera.addChild(_this.tilemap);
-    _this.camera.addChild(_this.entities);
-    return _this;
-  }
-
-  _createClass(Playground, [{
-    key: 'update',
-    value: function update(dt) {
-      this.tilemap.update(dt);
-      this.entities.update(dt);
-      this.camera.update(dt);
+        _this.addChild(_this.background);
+        _this.addChild(_this.camera);
+        _this.camera.addChild(_this.tilemap);
+        _this.camera.addChild(_this.entities);
+        return _this;
     }
-  }, {
-    key: 'restart',
-    value: function restart() {
-      this.scenes.set('playground', this.levelCount);
-    }
-  }, {
-    key: 'complete',
-    value: function complete() {
-      this.world.storage.set('level', this.levelCount++);
-      this.scenes.set('playground', this.levelCount);
-    }
-  }]);
 
-  return Playground;
+    _createClass(Playground, [{
+        key: 'update',
+        value: function update(dt) {
+            this.tilemap.update(dt);
+            this.entities.update(dt);
+            this.camera.update(dt);
+            this.background.tilePosition.x = this.camera.pivot.x / 50;
+        }
+    }, {
+        key: 'restart',
+        value: function restart() {
+            this.scenes.set('playground', this.levelCount);
+        }
+    }, {
+        key: 'complete',
+        value: function complete() {
+            this.world.storage.set('level', this.levelCount++);
+            this.scenes.set('playground', this.levelCount);
+        }
+    }]);
+
+    return Playground;
 }(PIXI.Container);
 
 exports.default = Playground;
@@ -42803,7 +42820,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '49703' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '61179' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 

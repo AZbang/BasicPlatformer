@@ -18,17 +18,23 @@ export default class Entity extends PIXI.Sprite {
     this.dy += this.manager.level.gravity*dt;
 
     this.x += this.dx*dt;
-    this.checkCollision(0);
+    this.checkCollisionAreas(0);
 
     this.y += this.dy*dt;
-    this.checkCollision(1);
-
+    this.checkCollisionAreas(1);
+    this.checkCollisionEntities();
     this.updateBehavior(dt);
   }
-  checkCollision(dir) {
+  checkCollisionEntities() {
+    for(let i = 0; i < this.manager.children.length; i++) {
+      let entity = this.manager.children[i];
+      if(entity.name === this.name) continue;
+      if(utils.checkRectsCollision(this, entity)) this.onCollide(entity);
+    }
+  }
+  checkCollisionAreas(dir) {
     for(let i = 0; i < this.manager.objects.length; i++) {
       let obj = this.manager.objects[i];
-      if(obj.name === this.name) continue;
       if(utils.checkRectsCollision(this, obj)) {
         switch(obj.name) {
           case 'solid':
@@ -49,10 +55,13 @@ export default class Entity extends PIXI.Sprite {
             }
             break;
           case 'jump':
-            if(this.isGround) this.dy = -10;
+            if(this.isGround) this.dy = -45;
             break;
           case 'slopeRight':
-
+            let dtX = obj.x-(this.x+this.width);
+            let dtY = Math.abs(obj.height*dtX/obj.width);
+            if(this.y > obj.y+obj.height-dtY-this.height)
+              this.y = obj.y+obj.height-dtY-this.height;
             break;
           case 'slopeLeft':
 

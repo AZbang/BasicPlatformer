@@ -5,8 +5,8 @@ export default class Camera extends PIXI.Container {
     super();
     this.position.set(scene.world.screen.width/2, scene.world.screen.height/2);
   }
-  fallow(entity) {
-    this.pivot.copy(entity.position);
+  fallow(obj) {
+    this.pivot.set(obj.x+obj.width/2, obj.y+obj.height/2);
   }
   update(dt) {
 
