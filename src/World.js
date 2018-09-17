@@ -13,9 +13,9 @@ export default class World extends PIXI.Application {
 
     this.scenes = new Scenes(this);
     this.storage = new Storage(this);
-    this.ticker.add(() => this.update());
+    this.ticker.add((dt) => this.update(dt));
   }
-  update() {
-    this.scenes.update();
+  update(dt) {
+    this.scenes.update(dt);
   }
 }

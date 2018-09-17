@@ -13,20 +13,22 @@ export default class Playground extends PIXI.Container {
     this.levelCount = level;
     this.levelData = PIXI.loader.resources['level' + level].data;
 
+    this.gravity = 1;
+
     this.camera = new Camera(this);
     this.background = new PIXI.Sprite.fromImage(this.levelData.properties.background);
-    this.tilemap = new TileMap(this, this.levelData);
     this.entities = new EntitiesManager(this, this.levelData);
+    this.tilemap = new TileMap(this, this.levelData);
 
     this.addChild(this.background);
     this.addChild(this.camera);
     this.camera.addChild(this.tilemap);
     this.camera.addChild(this.entities);
   }
-  update() {
-    this.tilemap.update();
-    this.entities.update();
-    this.camera.update();
+  update(dt) {
+    this.tilemap.update(dt);
+    this.entities.update(dt);
+    this.camera.update(dt);
   }
   restart() {
     this.scenes.set('playground', this.levelCount);

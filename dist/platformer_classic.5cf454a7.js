@@ -41762,13 +41762,21 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var Camera = function (_PIXI$Container) {
   _inherits(Camera, _PIXI$Container);
 
-  function Camera() {
+  function Camera(scene) {
     _classCallCheck(this, Camera);
 
-    return _possibleConstructorReturn(this, (Camera.__proto__ || Object.getPrototypeOf(Camera)).call(this));
+    var _this = _possibleConstructorReturn(this, (Camera.__proto__ || Object.getPrototypeOf(Camera)).call(this));
+
+    _this.position.set(scene.world.screen.width / 2, scene.world.screen.height / 2);
+    return _this;
   }
 
   _createClass(Camera, [{
+    key: 'fallow',
+    value: function fallow(entity) {
+      this.pivot.copy(entity.position);
+    }
+  }, {
     key: 'update',
     value: function update(dt) {}
   }]);
@@ -41804,7 +41812,31 @@ var TileMap = function (_PIXI$Container) {
   function TileMap(scene, data) {
     _classCallCheck(this, TileMap);
 
-    return _possibleConstructorReturn(this, (TileMap.__proto__ || Object.getPrototypeOf(TileMap)).call(this));
+    var _this = _possibleConstructorReturn(this, (TileMap.__proto__ || Object.getPrototypeOf(TileMap)).call(this));
+
+    _this.textures = [];
+    data.tilesets.forEach(function (tileset) {
+      for (var y = 0; y < tileset.imageheight / tileset.tileheight; y++) {
+        for (var x = 0; x < tileset.columns; x++) {
+          _this.textures.push(new PIXI.Texture(PIXI.Texture.fromImage(tileset.image), new PIXI.Rectangle(x * tileset.tilewidth, y * tileset.tileheight, tileset.tilewidth, tileset.tileheight)));
+        }
+      }
+    });
+
+    data.layers.forEach(function (layer) {
+      if (layer.type == 'tilelayer') {
+        for (var x = 0; x < layer.width; x++) {
+          for (var y = 0; y < layer.height; y++) {
+            if (!layer.data[x + layer.width * y]) continue;
+            var tile = new PIXI.Sprite(_this.textures[layer.data[x + layer.width * y] - 1]);
+            tile.x = x * 128;
+            tile.y = y * 128;
+            _this.addChild(tile);
+          }
+        }
+      }
+    });
+    return _this;
   }
 
   _createClass(TileMap, [{
@@ -41823,7 +41855,9 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = {
-  checkRectsCollision: function checkRectsCollision(a, b) {}
+  checkRectsCollision: function checkRectsCollision(r1, r2) {
+    return !(r2.x >= r1.x + r1.width || r2.x + r2.width <= r1.x || r2.y >= r1.y + r1.height || r2.y + r2.height <= r1.y);
+  }
 };
 },{}],"src\\entities\\Entity.js":[function(require,module,exports) {
 'use strict';
@@ -41855,19 +41889,18 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var Entity = function (_PIXI$Sprite) {
   _inherits(Entity, _PIXI$Sprite);
 
-  function Entity(manager, x, y, w, h, properties) {
+  function Entity(manager, x, y, props) {
     _classCallCheck(this, Entity);
 
     var _this = _possibleConstructorReturn(this, (Entity.__proto__ || Object.getPrototypeOf(Entity)).call(this, PIXI.Texture.WHITE));
 
-    Object.assign(_this, properties);
+    Object.assign(_this, props);
 
     _this.manager = manager;
     _this.x = x;
     _this.y = y;
-    _this.width = w;
-    _this.height = h;
 
+    _this.isGround = false;
     _this.dx = 0;
     _this.dy = 0;
     return _this;
@@ -41876,18 +41909,43 @@ var Entity = function (_PIXI$Sprite) {
   _createClass(Entity, [{
     key: 'update',
     value: function update(dt) {
-      this.x += this.dx;
-      this.y += this.dy;
+      this.dy += this.manager.level.gravity * dt;
 
+      this.x += this.dx * dt;
+      this.checkCollision(0);
+
+      this.y += this.dy * dt;
+      this.checkCollision(1);
+
+      this.updateBehavior(dt);
+    }
+  }, {
+    key: 'checkCollision',
+    value: function checkCollision(dir) {
       for (var i = 0; i < this.manager.objects.length; i++) {
         var obj = this.manager.objects[i];
+        if (obj.name === this.name) continue;
         if (_utils2.default.checkRectsCollision(this, obj)) {
           switch (obj.name) {
             case 'solid':
-
+              if (this.dy > 0 && dir) {
+                this.y = obj.top - this.height;
+                this.isGround = true;
+                this.dy = 0;
+              } else if (this.dy < 0 && dir) {
+                this.y = obj.bottom;
+                this.dy = 0;
+              }
+              if (this.dx < 0 && !dir) {
+                this.x = obj.right;
+                this.dx = 0;
+              } else if (this.dx > 0 && !dir) {
+                this.x = obj.left - this.width;
+                this.dx = 0;
+              }
               break;
             case 'jump':
-
+              if (this.isGround) this.dy = -10;
               break;
             case 'slopeRight':
 
@@ -41896,10 +41954,9 @@ var Entity = function (_PIXI$Sprite) {
 
               break;
           }
-          this.onCollide(obj);
+          this.onCollide(obj, dir);
         }
       }
-      this.updateBehavior(dt);
     }
   }]);
 
@@ -41907,7 +41964,321 @@ var Entity = function (_PIXI$Sprite) {
 }(PIXI.Sprite);
 
 exports.default = Entity;
-},{"pixi.js":"node_modules\\pixi.js\\lib\\index.js","../utils":"src\\utils\\index.js"}],"src\\entities\\Player.js":[function(require,module,exports) {
+},{"pixi.js":"node_modules\\pixi.js\\lib\\index.js","../utils":"src\\utils\\index.js"}],"src\\utils\\keymaster.js":[function(require,module,exports) {
+var global = arguments[3];
+//     keymaster.js
+//     (c) 2011-2013 Thomas Fuchs
+//     keymaster.js may be freely distributed under the MIT license.
+
+;(function (global) {
+  var k,
+      _handlers = {},
+      _mods = { 16: false, 18: false, 17: false, 91: false },
+      _scope = 'all',
+
+  // modifier keys
+  _MODIFIERS = {
+    '⇧': 16, shift: 16,
+    '⌥': 18, alt: 18, option: 18,
+    '⌃': 17, ctrl: 17, control: 17,
+    '⌘': 91, command: 91
+  },
+
+  // special keys
+  _MAP = {
+    backspace: 8, tab: 9, clear: 12,
+    enter: 13, 'return': 13,
+    esc: 27, escape: 27, space: 32,
+    left: 37, up: 38,
+    right: 39, down: 40,
+    del: 46, 'delete': 46,
+    home: 36, end: 35,
+    pageup: 33, pagedown: 34,
+    ',': 188, '.': 190, '/': 191,
+    '`': 192, '-': 189, '=': 187,
+    ';': 186, '\'': 222,
+    '[': 219, ']': 221, '\\': 220
+  },
+      code = function code(x) {
+    return _MAP[x] || x.toUpperCase().charCodeAt(0);
+  },
+      _downKeys = [];
+
+  for (k = 1; k < 20; k++) {
+    _MAP['f' + k] = 111 + k;
+  } // IE doesn't support Array#indexOf, so have a simple replacement
+  function index(array, item) {
+    var i = array.length;
+    while (i--) {
+      if (array[i] === item) return i;
+    }return -1;
+  }
+
+  // for comparing mods before unassignment
+  function compareArray(a1, a2) {
+    if (a1.length != a2.length) return false;
+    for (var i = 0; i < a1.length; i++) {
+      if (a1[i] !== a2[i]) return false;
+    }
+    return true;
+  }
+
+  var modifierMap = {
+    16: 'shiftKey',
+    18: 'altKey',
+    17: 'ctrlKey',
+    91: 'metaKey'
+  };
+  function updateModifierKey(event) {
+    for (k in _mods) {
+      _mods[k] = event[modifierMap[k]];
+    }
+  };
+
+  // handle keydown event
+  function dispatch(event) {
+    var key, handler, k, i, modifiersMatch, scope;
+    key = event.keyCode;
+
+    if (index(_downKeys, key) == -1) {
+      _downKeys.push(key);
+    }
+
+    // if a modifier key, set the key.<modifierkeyname> property to true and return
+    if (key == 93 || key == 224) key = 91; // right command on webkit, command on Gecko
+    if (key in _mods) {
+      _mods[key] = true;
+      // 'assignKey' from inside this closure is exported to window.key
+      for (k in _MODIFIERS) {
+        if (_MODIFIERS[k] == key) assignKey[k] = true;
+      }return;
+    }
+    updateModifierKey(event);
+
+    // see if we need to ignore the keypress (filter() can can be overridden)
+    // by default ignore key presses if a select, textarea, or input is focused
+    if (!assignKey.filter.call(this, event)) return;
+
+    // abort if no potentially matching shortcuts found
+    if (!(key in _handlers)) return;
+
+    scope = getScope();
+
+    // for each potential shortcut
+    for (i = 0; i < _handlers[key].length; i++) {
+      handler = _handlers[key][i];
+
+      // see if it's in the current scope
+      if (handler.scope == scope || handler.scope == 'all') {
+        // check if modifiers match if any
+        modifiersMatch = handler.mods.length > 0;
+        for (k in _mods) {
+          if (!_mods[k] && index(handler.mods, +k) > -1 || _mods[k] && index(handler.mods, +k) == -1) modifiersMatch = false;
+        } // call the handler and stop the event if neccessary
+        if (handler.mods.length == 0 && !_mods[16] && !_mods[18] && !_mods[17] && !_mods[91] || modifiersMatch) {
+          if (handler.method(event, handler) === false) {
+            if (event.preventDefault) event.preventDefault();else event.returnValue = false;
+            if (event.stopPropagation) event.stopPropagation();
+            if (event.cancelBubble) event.cancelBubble = true;
+          }
+        }
+      }
+    }
+  };
+
+  // unset modifier keys on keyup
+  function clearModifier(event) {
+    var key = event.keyCode,
+        k,
+        i = index(_downKeys, key);
+
+    // remove key from _downKeys
+    if (i >= 0) {
+      _downKeys.splice(i, 1);
+    }
+
+    if (key == 93 || key == 224) key = 91;
+    if (key in _mods) {
+      _mods[key] = false;
+      for (k in _MODIFIERS) {
+        if (_MODIFIERS[k] == key) assignKey[k] = false;
+      }
+    }
+  };
+
+  function resetModifiers() {
+    for (k in _mods) {
+      _mods[k] = false;
+    }for (k in _MODIFIERS) {
+      assignKey[k] = false;
+    }
+  };
+
+  // parse and assign shortcut
+  function assignKey(key, scope, method) {
+    var keys, mods;
+    keys = getKeys(key);
+    if (method === undefined) {
+      method = scope;
+      scope = 'all';
+    }
+
+    // for each shortcut
+    for (var i = 0; i < keys.length; i++) {
+      // set modifier keys if any
+      mods = [];
+      key = keys[i].split('+');
+      if (key.length > 1) {
+        mods = getMods(key);
+        key = [key[key.length - 1]];
+      }
+      // convert to keycode and...
+      key = key[0];
+      key = code(key);
+      // ...store handler
+      if (!(key in _handlers)) _handlers[key] = [];
+      _handlers[key].push({ shortcut: keys[i], scope: scope, method: method, key: keys[i], mods: mods });
+    }
+  };
+
+  // unbind all handlers for given key in current scope
+  function unbindKey(key, scope) {
+    var multipleKeys,
+        keys,
+        mods = [],
+        i,
+        j,
+        obj;
+
+    multipleKeys = getKeys(key);
+
+    for (j = 0; j < multipleKeys.length; j++) {
+      keys = multipleKeys[j].split('+');
+
+      if (keys.length > 1) {
+        mods = getMods(keys);
+      }
+
+      key = keys[keys.length - 1];
+      key = code(key);
+
+      if (scope === undefined) {
+        scope = getScope();
+      }
+      if (!_handlers[key]) {
+        return;
+      }
+      for (i = 0; i < _handlers[key].length; i++) {
+        obj = _handlers[key][i];
+        // only clear handlers if correct scope and mods match
+        if (obj.scope === scope && compareArray(obj.mods, mods)) {
+          _handlers[key][i] = {};
+        }
+      }
+    }
+  };
+
+  // Returns true if the key with code 'keyCode' is currently down
+  // Converts strings into key codes.
+  function isPressed(keyCode) {
+    if (typeof keyCode == 'string') {
+      keyCode = code(keyCode);
+    }
+    return index(_downKeys, keyCode) != -1;
+  }
+
+  function getPressedKeyCodes() {
+    return _downKeys.slice(0);
+  }
+
+  function filter(event) {
+    var tagName = (event.target || event.srcElement).tagName;
+    // ignore keypressed in any elements that support keyboard data input
+    return !(tagName == 'INPUT' || tagName == 'SELECT' || tagName == 'TEXTAREA');
+  }
+
+  // initialize key.<modifier> to false
+  for (k in _MODIFIERS) {
+    assignKey[k] = false;
+  } // set current scope (default 'all')
+  function setScope(scope) {
+    _scope = scope || 'all';
+  };
+  function getScope() {
+    return _scope || 'all';
+  };
+
+  // delete all handlers for a given scope
+  function deleteScope(scope) {
+    var key, handlers, i;
+
+    for (key in _handlers) {
+      handlers = _handlers[key];
+      for (i = 0; i < handlers.length;) {
+        if (handlers[i].scope === scope) handlers.splice(i, 1);else i++;
+      }
+    }
+  };
+
+  // abstract key logic for assign and unassign
+  function getKeys(key) {
+    var keys;
+    key = key.replace(/\s/g, '');
+    keys = key.split(',');
+    if (keys[keys.length - 1] == '') {
+      keys[keys.length - 2] += ',';
+    }
+    return keys;
+  }
+
+  // abstract mods logic for assign and unassign
+  function getMods(key) {
+    var mods = key.slice(0, key.length - 1);
+    for (var mi = 0; mi < mods.length; mi++) {
+      mods[mi] = _MODIFIERS[mods[mi]];
+    }return mods;
+  }
+
+  // cross-browser events
+  function addEvent(object, event, method) {
+    if (object.addEventListener) object.addEventListener(event, method, false);else if (object.attachEvent) object.attachEvent('on' + event, function () {
+      method(window.event);
+    });
+  };
+
+  // set the handlers globally on document
+  addEvent(document, 'keydown', function (event) {
+    dispatch(event);
+  }); // Passing _scope to a callback to ensure it remains the same by execution. Fixes #48
+  addEvent(document, 'keyup', clearModifier);
+
+  // reset modifiers to false whenever the window is (re)focused.
+  addEvent(window, 'focus', resetModifiers);
+
+  // store previously defined key
+  var previousKey = global.key;
+
+  // restore previously defined key and return reference to our key object
+  function noConflict() {
+    var k = global.key;
+    global.key = previousKey;
+    return k;
+  }
+
+  // set window.key and window.key.set/get/deleteScope, and the default filter
+  global.key = assignKey;
+  global.key.setScope = setScope;
+  global.key.getScope = getScope;
+  global.key.deleteScope = deleteScope;
+  global.key.filter = filter;
+  global.key.isPressed = isPressed;
+  global.key.getPressedKeyCodes = getPressedKeyCodes;
+  global.key.noConflict = noConflict;
+  global.key.unbind = unbindKey;
+
+  if (typeof module !== 'undefined') module.exports = assignKey;
+})(this);
+},{}],"src\\entities\\Player.js":[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -41920,6 +42291,10 @@ var _Entity2 = require('./Entity');
 
 var _Entity3 = _interopRequireDefault(_Entity2);
 
+var _keymaster = require('../utils/keymaster');
+
+var _keymaster2 = _interopRequireDefault(_keymaster);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -41931,25 +42306,39 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var Player = function (_Entity) {
   _inherits(Player, _Entity);
 
-  function Player(objects, x, y, w, h, properties) {
+  function Player(manager, x, y, properties) {
     _classCallCheck(this, Player);
 
-    return _possibleConstructorReturn(this, (Player.__proto__ || Object.getPrototypeOf(Player)).call(this, objects, x, y, w, h, properties));
+    var _this = _possibleConstructorReturn(this, (Player.__proto__ || Object.getPrototypeOf(Player)).call(this, manager, x, y, properties));
+
+    _this.texture = PIXI.Texture.fromFrame('alienPink_front.png');
+    return _this;
   }
 
   _createClass(Player, [{
     key: 'updateBehavior',
-    value: function updateBehavior() {}
+    value: function updateBehavior() {
+      if (_keymaster2.default.isPressed('d')) this.dx = 10;else if (_keymaster2.default.isPressed('a')) this.dx = -10;else this.dx = 0;
+
+      if (_keymaster2.default.isPressed('w') && this.isGround) {
+        this.dy = -30;
+        this.isGround = false;
+      }
+      this.manager.level.camera.fallow(this);
+    }
   }, {
     key: 'onCollide',
-    value: function onCollide(obj) {}
+    value: function onCollide(obj) {
+      if (obj.name === 'slime') this.manager.level.restart();
+      if (obj.name === 'exit') this.manager.level.complete();
+    }
   }]);
 
   return Player;
 }(_Entity3.default);
 
 exports.default = Player;
-},{"./Entity":"src\\entities\\Entity.js"}],"src\\entities\\Slime.js":[function(require,module,exports) {
+},{"./Entity":"src\\entities\\Entity.js","../utils/keymaster":"src\\utils\\keymaster.js"}],"src\\entities\\Slime.js":[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -41973,18 +42362,32 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var Slime = function (_Entity) {
   _inherits(Slime, _Entity);
 
-  function Slime(objects, x, y, w, h, properties) {
+  function Slime(manager, x, y, w, h, properties) {
     _classCallCheck(this, Slime);
 
-    return _possibleConstructorReturn(this, (Slime.__proto__ || Object.getPrototypeOf(Slime)).call(this, objects, x, y, w, h, properties));
+    var _this = _possibleConstructorReturn(this, (Slime.__proto__ || Object.getPrototypeOf(Slime)).call(this, manager, x, y, w, h, properties));
+
+    _this.texture = PIXI.Texture.fromFrame('slimeGreen.png');
+
+    return _this;
   }
 
   _createClass(Slime, [{
     key: 'updateBehavior',
-    value: function updateBehavior(dt) {}
+    value: function updateBehavior(dt) {
+      if (this.isGround) this.dx = 3;else this.dx = 0;
+    }
   }, {
     key: 'onCollide',
-    value: function onCollide(obj) {}
+    value: function onCollide(obj) {
+      if (obj.name === 'edge') {
+        this.dx = -this.dx;
+        this.scale.x *= -1;
+      }
+      if (obj.name === 'dead') {
+        this.manager.removeEntity(this);
+      }
+    }
   }]);
 
   return Slime;
@@ -42053,15 +42456,7 @@ var EntitiesManager = function (_PIXI$Container) {
     data.layers.forEach(function (layer) {
       if (layer.type === 'objectgroup') {
         layer.objects.forEach(function (obj) {
-          if (obj.type === 'spawn') {
-            var entity = new _entities2.default[obj.name](_this, obj.x, obj.y, obj.properties);
-            _this.objects.push(entity);
-            _this.addChild(entity);
-          } else if (obj.type === 'area') {
-            var rect = new PIXI.Rectangle(obj.x, obj.y, obj.width, obj.height);
-            Object.assign(rect, obj.properties);
-            _this.objects.push(rect);
-          }
+          if (obj.type === 'spawn') _this.addEntity(obj.name, obj.x, obj.y, obj.properties);else if (obj.type === 'area') _this.addArea(obj.name, obj.x, obj.y, obj.width, obj.height, obj.properties);
         });
       }
     });
@@ -42069,6 +42464,32 @@ var EntitiesManager = function (_PIXI$Container) {
   }
 
   _createClass(EntitiesManager, [{
+    key: 'removeEntity',
+    value: function removeEntity(entity) {
+      this.removeChild(entity);
+    }
+  }, {
+    key: 'addEntity',
+    value: function addEntity(name, x, y, props) {
+      var entity = new _entities2.default[name](this, x, y, props);
+      entity.name = name;
+      this.addChild(entity);
+    }
+  }, {
+    key: 'addArea',
+    value: function addArea(name, x, y, w, h, props) {
+      var rect = new PIXI.Rectangle(x, y, w, h);
+      Object.assign(rect, props);
+      rect.name = name;
+      this.objects.push(rect);
+    }
+  }, {
+    key: 'removeArea',
+    value: function removeArea(area) {
+      var index = this.objects.indexOf(area);
+      if (index !== -1) this.objects.slice(index, 1);
+    }
+  }, {
     key: 'update',
     value: function update(dt) {
       for (var i = 0; i < this.children.length; i++) {
@@ -42132,10 +42553,12 @@ var Playground = function (_PIXI$Container) {
     _this.levelCount = level;
     _this.levelData = PIXI.loader.resources['level' + level].data;
 
+    _this.gravity = 1;
+
     _this.camera = new _Camera2.default(_this);
     _this.background = new PIXI.Sprite.fromImage(_this.levelData.properties.background);
-    _this.tilemap = new _TileMap2.default(_this, _this.levelData);
     _this.entities = new _EntitiesManager2.default(_this, _this.levelData);
+    _this.tilemap = new _TileMap2.default(_this, _this.levelData);
 
     _this.addChild(_this.background);
     _this.addChild(_this.camera);
@@ -42146,10 +42569,10 @@ var Playground = function (_PIXI$Container) {
 
   _createClass(Playground, [{
     key: 'update',
-    value: function update() {
-      this.tilemap.update();
-      this.entities.update();
-      this.camera.update();
+    value: function update(dt) {
+      this.tilemap.update(dt);
+      this.entities.update(dt);
+      this.camera.update(dt);
     }
   }, {
     key: 'restart',
@@ -42318,16 +42741,16 @@ var World = function (_PIXI$Application) {
 
     _this.scenes = new _Scenes2.default(_this);
     _this.storage = new _Storage2.default(_this);
-    _this.ticker.add(function () {
-      return _this.update();
+    _this.ticker.add(function (dt) {
+      return _this.update(dt);
     });
     return _this;
   }
 
   _createClass(World, [{
     key: 'update',
-    value: function update() {
-      this.scenes.update();
+    value: function update(dt) {
+      this.scenes.update(dt);
     }
   }]);
 
@@ -42344,7 +42767,7 @@ var _World2 = _interopRequireDefault(_World);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-PIXI.loader.add('spritesheet_tiles.png', 'assets/spritesheet_tiles.png').add('spritesheet_ground.png', 'assets/spritesheet_ground.png').add('blue_grass.png', 'assets/blue_grass.png').add('assets/spritesheet_players.xml').add('level1', 'assets/level1.json').load(onAssetsLoaded);
+PIXI.loader.add('spritesheet_tiles.png', 'assets/spritesheet_tiles.png').add('spritesheet_ground.png', 'assets/spritesheet_ground.png').add('blue_grass.png', 'assets/blue_grass.png').add('sprites', 'assets/sprites.json').add('level1', 'assets/level1.json').load(onAssetsLoaded);
 
 function onAssetsLoaded(res) {
     console.log(res);
@@ -42380,7 +42803,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '51850' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '49703' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
