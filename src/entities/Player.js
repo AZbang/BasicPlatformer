@@ -7,7 +7,6 @@ export default class Player extends Entity {
     this.texture = PIXI.Texture.fromFrame('alienPink_front.png');
 
     this.collisionArea = new PIXI.Rectangle(40, 0, this.width-80, this.height);
-    this.manager.level.camera.zoom(.5);
   }
   updateBehavior() {
     if(key.isPressed('d')) this.dx = 10;
@@ -23,5 +22,9 @@ export default class Player extends Entity {
   onCollide(obj) {
     if(obj.name === 'slime' || obj.name === 'dead') this.manager.level.restart();
     if(obj.name === 'exit') this.manager.level.complete();
+    if(obj.name === 'zoomCamera') {
+      this.manager.level.camera.zoom(obj.zoom, 400);
+      this.manager.removeArea(obj);
+    }
   }
 }

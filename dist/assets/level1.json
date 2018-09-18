@@ -184,7 +184,7 @@
                 {
                  "height":128,
                  "id":28,
-                 "name":"",
+                 "name":"solid",
                  "rotation":0,
                  "type":"area",
                  "visible":true,
@@ -427,15 +427,23 @@
                  "y":346
                 }, 
                 {
-                 "height":128,
+                 "height":200.727272727273,
                  "id":59,
-                 "name":"edgeLeft",
+                 "name":"zoomCamera",
+                 "properties":
+                    {
+                     "zoom":0.5
+                    },
+                 "propertytypes":
+                    {
+                     "zoom":"float"
+                    },
                  "rotation":0,
                  "type":"area",
                  "visible":true,
-                 "width":123.999999999999,
-                 "x":3328,
-                 "y":1920
+                 "width":251.272727272726,
+                 "x":3476.48484848485,
+                 "y":1844.24242424242
                 }, 
                 {
                  "height":133,
@@ -469,6 +477,55 @@
                  "width":125.667,
                  "x":7557.1665,
                  "y":375.924242424242
+                }, 
+                {
+                 "height":128,
+                 "id":63,
+                 "name":"edgeLeft",
+                 "rotation":0,
+                 "type":"area",
+                 "visible":true,
+                 "width":124,
+                 "x":3307.69696969697,
+                 "y":1908.72727272727
+                }, 
+                {
+                 "height":200.727,
+                 "id":65,
+                 "name":"zoomCamera",
+                 "properties":
+                    {
+                     "zoom":0.7
+                    },
+                 "propertytypes":
+                    {
+                     "zoom":"float"
+                    },
+                 "rotation":0,
+                 "type":"area",
+                 "visible":true,
+                 "width":251.273,
+                 "x":5319.81804545455,
+                 "y":817.818318181818
+                }, 
+                {
+                 "height":200.727,
+                 "id":66,
+                 "name":"zoomCamera",
+                 "properties":
+                    {
+                     "zoom":0.5
+                    },
+                 "propertytypes":
+                    {
+                     "zoom":"float"
+                    },
+                 "rotation":0,
+                 "type":"area",
+                 "visible":true,
+                 "width":251.273,
+                 "x":7304.66653030303,
+                 "y":314.788015151515
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -476,7 +533,7 @@
          "x":0,
          "y":0
         }],
- "nextobjectid":63,
+ "nextobjectid":67,
  "orientation":"orthogonal",
  "properties":
     {

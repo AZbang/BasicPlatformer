@@ -1,4 +1,6 @@
 import * as PIXI from 'pixi.js';
+import TWEEN from '@tweenjs/tween.js';
+
 import Scenes from './managers/Scenes'
 import Storage from './managers/Storage'
 
@@ -17,5 +19,6 @@ export default class World extends PIXI.Application {
   }
   update(dt) {
     this.scenes.update(dt);
+    TWEEN.update();
   }
 }

@@ -5,6 +5,7 @@ PIXI.loader
     .add('spritesheet_ground.png', 'assets/spritesheet_ground.png')
     .add('blue_grass.png', 'assets/blue_grass.png')
     .add('sprites', 'assets/sprites.json')
+    .add('menu', 'assets/menu.json')
     .add('level1', 'assets/level1.json')
     .load(onAssetsLoaded);
 
