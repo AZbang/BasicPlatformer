@@ -5,6 +5,9 @@ export default class Player extends Entity {
   constructor(manager, x, y, properties) {
     super(manager, x, y, properties);
     this.texture = PIXI.Texture.fromFrame('alienPink_front.png');
+
+    this.collisionArea = new PIXI.Rectangle(40, 0, this.width-80, this.height);
+    this.manager.level.camera.zoom(.5);
   }
   updateBehavior() {
     if(key.isPressed('d')) this.dx = 10;

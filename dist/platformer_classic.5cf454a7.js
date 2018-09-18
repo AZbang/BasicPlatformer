@@ -41774,7 +41774,12 @@ var Camera = function (_PIXI$Container) {
   _createClass(Camera, [{
     key: 'fallow',
     value: function fallow(obj) {
-      this.pivot.set(obj.x + obj.width / 2, obj.y + obj.height / 2);
+      this.pivot.set(obj.x + obj.width / 2, obj.y);
+    }
+  }, {
+    key: 'zoom',
+    value: function zoom(scale, time) {
+      this.scale.set(scale);
     }
   }, {
     key: 'update',
@@ -41894,13 +41899,14 @@ var Entity = function (_PIXI$Sprite) {
   function Entity(manager, x, y, props) {
     _classCallCheck(this, Entity);
 
-    var _this = _possibleConstructorReturn(this, (Entity.__proto__ || Object.getPrototypeOf(Entity)).call(this, PIXI.Texture.WHITE));
+    var _this = _possibleConstructorReturn(this, (Entity.__proto__ || Object.getPrototypeOf(Entity)).call(this, PIXI.Texture.EMPTY));
 
     Object.assign(_this, props);
 
     _this.manager = manager;
     _this.x = x;
     _this.y = y;
+    _this.anchor.set(.5);
 
     _this.isGround = false;
     _this.dx = 0;
@@ -41922,12 +41928,22 @@ var Entity = function (_PIXI$Sprite) {
       this.updateBehavior(dt);
     }
   }, {
+    key: 'getCollisionBounds',
+    value: function getCollisionBounds() {
+      return {
+        x: this.x - this.width / 2 + this.collisionArea.x,
+        y: this.y - this.height / 2 + this.collisionArea.y,
+        width: this.collisionArea.width,
+        height: this.collisionArea.height
+      };
+    }
+  }, {
     key: 'checkCollisionEntities',
     value: function checkCollisionEntities() {
       for (var i = 0; i < this.manager.children.length; i++) {
         var entity = this.manager.children[i];
         if (entity.name === this.name) continue;
-        if (_utils2.default.checkRectsCollision(this, entity)) this.onCollide(entity);
+        if (_utils2.default.checkRectsCollision(this.getCollisionBounds(), entity.getCollisionBounds())) this.onCollide(entity);
       }
     }
   }, {
@@ -41935,36 +41951,43 @@ var Entity = function (_PIXI$Sprite) {
     value: function checkCollisionAreas(dir) {
       for (var i = 0; i < this.manager.objects.length; i++) {
         var obj = this.manager.objects[i];
-        if (_utils2.default.checkRectsCollision(this, obj)) {
-          switch (obj.name) {
-            case 'solid':
-              if (this.dy > 0 && dir) {
-                this.y = obj.top - this.height;
-                this.isGround = true;
-                this.dy = 0;
-              } else if (this.dy < 0 && dir) {
-                this.y = obj.bottom;
-                this.dy = 0;
-              }
-              if (this.dx < 0 && !dir) {
-                this.x = obj.right;
-                this.dx = 0;
-              } else if (this.dx > 0 && !dir) {
-                this.x = obj.left - this.width;
-                this.dx = 0;
-              }
-              break;
-            case 'jump':
-              if (this.isGround) this.dy = -45;
-              break;
-            case 'slopeRight':
-              var dtX = obj.x - (this.x + this.width);
-              var dtY = Math.abs(obj.height * dtX / obj.width);
-              if (this.y > obj.y + obj.height - dtY - this.height) this.y = obj.y + obj.height - dtY - this.height;
-              break;
-            case 'slopeLeft':
-
-              break;
+        var rectEntity = this.getCollisionBounds();
+        if (_utils2.default.checkRectsCollision(rectEntity, obj)) {
+          if (obj.name === 'solid') {
+            if (this.dy > 0 && dir) {
+              this.y = obj.top - this.collisionArea.height + this.height / 2;
+              this.isGround = true;
+              this.dy = 0;
+            } else if (this.dy < 0 && dir) {
+              this.y = obj.bottom + this.collisionArea.y + this.height / 2;
+              this.dy = 0;
+            }
+            if (this.dx < 0 && !dir) {
+              this.x = obj.right - this.collisionArea.x + this.width / 2;
+              this.dx = 0;
+            } else if (this.dx > 0 && !dir) {
+              this.x = obj.left - this.collisionArea.width - this.collisionArea.x + this.width / 2;
+              this.dx = 0;
+            }
+          } else if (obj.name === 'jump') {
+            if (this.isGround) this.dy = -45;
+          } else if (obj.name === 'slopeRight') {
+            var dtX = obj.x - (rectEntity.x + this.collisionArea.width);
+            var dtY = Math.abs(obj.height * dtX / obj.width);
+            if (this.y > obj.y + obj.height - dtY - this.collisionArea.height) {
+              this.y = obj.y + obj.height - dtY - this.collisionArea.height + this.height / 2;
+              this.isGround = true;
+              this.dy = 0;
+            }
+          } else if (obj.name === 'slopeLeft') {
+            var _dtX = obj.width - (rectEntity.x + this.collisionArea.width);
+            var _dtY = Math.abs(obj.height * _dtX / obj.width);
+            if (rectEntity.y > obj.y + obj.height - _dtY - this.collisionArea.height) {
+              this.y = obj.y + obj.height - _dtY - this.collisionArea.height + this.height / 2;
+              this.isGround = true;
+              this.dy = 0;
+            }
+            break;
           }
           this.onCollide(obj, dir);
         }
@@ -42324,6 +42347,9 @@ var Player = function (_Entity) {
     var _this = _possibleConstructorReturn(this, (Player.__proto__ || Object.getPrototypeOf(Player)).call(this, manager, x, y, properties));
 
     _this.texture = PIXI.Texture.fromFrame('alienPink_front.png');
+
+    _this.collisionArea = new PIXI.Rectangle(40, 0, _this.width - 80, _this.height);
+    _this.manager.level.camera.zoom(.5);
     return _this;
   }
 
@@ -42381,6 +42407,7 @@ var Slime = function (_Entity) {
 
     _this.texture = PIXI.Texture.fromFrame('slimeGreen.png');
 
+    _this.collisionArea = new PIXI.Rectangle(0, 0, _this.width, _this.height);
     _this.dir = -3;
     return _this;
   }
@@ -42396,11 +42423,9 @@ var Slime = function (_Entity) {
       if (obj.name === 'edgeLeft') {
         this.dir = 3;
         this.scale.x = -1;
-        this.x += this.width;
       } else if (obj.name === 'edgeRight') {
         this.dir = -3;
         this.scale.x = 1;
-        this.x -= this.width;
       }
       if (obj.name === 'dead') this.manager.removeEntity(this);
     }
@@ -42820,7 +42845,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '61179' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '63139' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 

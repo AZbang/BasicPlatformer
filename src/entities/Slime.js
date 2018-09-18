@@ -5,6 +5,7 @@ export default class Slime extends Entity {
     super(manager, x, y, w, h, properties);
     this.texture = PIXI.Texture.fromFrame('slimeGreen.png');
 
+    this.collisionArea = new PIXI.Rectangle(0, 0, this.width, this.height);
     this.dir = -3;
   }
   updateBehavior(dt) {
@@ -15,11 +16,9 @@ export default class Slime extends Entity {
     if(obj.name === 'edgeLeft') {
       this.dir = 3;
       this.scale.x = -1;
-      this.x += this.width;
     } else if(obj.name === 'edgeRight') {
       this.dir = -3;
       this.scale.x = 1;
-      this.x -= this.width;
     }
     if(obj.name === 'dead') this.manager.removeEntity(this);
   }
