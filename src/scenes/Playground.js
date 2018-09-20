@@ -33,10 +33,14 @@ export default class Playground extends PIXI.Container {
 
   }
   restart() {
-    this.scenes.set('playground', this.levelCount);
+    this.scenes.splash(0xFFFFFF, 2000, () => {
+      this.scenes.set('playground', this.levelCount);
+    });
   }
   complete() {
-    this.world.storage.set('level', this.levelCount++);
-    this.scenes.set('playground', this.levelCount);
+    this.scenes.splash(0xFFFFFF, 2000, () => {
+      this.world.storage.set('level', this.levelCount+1);
+      this.scenes.set('playground', this.levelCount+1);
+    });
   }
 }

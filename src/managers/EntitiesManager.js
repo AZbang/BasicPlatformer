@@ -33,11 +33,11 @@ export default class EntitiesManager extends PIXI.Container {
   }
   removeArea(area) {
     const index = this.objects.indexOf(area);
-    if(index !== -1) this.objects.slice(index, 1);
+    if(index !== -1) this.objects.splice(index, 1);
   }
   update(dt) {
     for(let i = 0; i < this.children.length; i++) {
-      this.children[i].update(dt);
+      this.children[i].updateEntity(dt);
     }
   }
 }

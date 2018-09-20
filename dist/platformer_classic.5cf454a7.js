@@ -42718,7 +42718,7 @@ var Menu = function (_PIXI$Container) {
     _this.label.interactive = true;
     _this.label.cursor = 'pointer';
     _this.label.pointertap = function () {
-      scenes.set('playground');
+      scenes.set('playground', _this.world.storage.get('level'));
     };
 
     _this.menuData = PIXI.loader.resources['menu'].data;
@@ -42788,7 +42788,6 @@ var Camera = function (_PIXI$Container) {
   }, {
     key: 'zoom',
     value: function zoom(scale, time) {
-      if (this.scale.x === scale) return;
       new _tween2.default.Tween(this.scale).to({ x: scale, y: scale }, time).start();
     }
   }, {
@@ -42811,6 +42810,68 @@ exports.default = {
     return !(r2.x >= r1.x + r1.width || r2.x + r2.width <= r1.x || r2.y >= r1.y + r1.height || r2.y + r2.height <= r1.y);
   }
 };
+},{}],"src\\managers\\AnimationController.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var AnimationController = function (_PIXI$extras$Animated) {
+  _inherits(AnimationController, _PIXI$extras$Animated);
+
+  function AnimationController() {
+    _classCallCheck(this, AnimationController);
+
+    var _this = _possibleConstructorReturn(this, (AnimationController.__proto__ || Object.getPrototypeOf(AnimationController)).call(this, [PIXI.Texture.EMPTY]));
+
+    _this.animations = {};
+    _this.currentAnimation = null;
+    return _this;
+  }
+
+  _createClass(AnimationController, [{
+    key: "addAnimation",
+    value: function addAnimation(name, data) {
+      var anim = [];
+      for (var i = 0; i < data.images.length; i++) {
+        var texture = PIXI.Texture.fromImage(data.images[i]);
+        anim.push(texture);
+      }
+      this.animations[name] = { frames: anim };
+      Object.assign(this.animations[name], data);
+    }
+  }, {
+    key: "removeAnimation",
+    value: function removeAnimation(name) {
+      delete this.animations[name];
+    }
+  }, {
+    key: "setAnimation",
+    value: function setAnimation(name) {
+      if (this.currentAnimation === name) return;
+
+      this.currentAnimation = name;
+      this.textures = this.animations[name].frames;
+      this.animationSpeed = this.animations[name].speed;
+      this.loop = this.animations[name].speed;
+      this.play();
+      // ...add event bundlers and etc
+    }
+  }]);
+
+  return AnimationController;
+}(PIXI.extras.AnimatedSprite);
+
+exports.default = AnimationController;
 },{}],"src\\entities\\Entity.js":[function(require,module,exports) {
 'use strict';
 
@@ -42828,6 +42889,10 @@ var _utils = require('../utils');
 
 var _utils2 = _interopRequireDefault(_utils);
 
+var _AnimationController2 = require('../managers/AnimationController');
+
+var _AnimationController3 = _interopRequireDefault(_AnimationController2);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
@@ -42838,38 +42903,42 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var Entity = function (_PIXI$Sprite) {
-  _inherits(Entity, _PIXI$Sprite);
+var Entity = function (_AnimationController) {
+  _inherits(Entity, _AnimationController);
 
   function Entity(manager, x, y, props) {
     _classCallCheck(this, Entity);
 
-    var _this = _possibleConstructorReturn(this, (Entity.__proto__ || Object.getPrototypeOf(Entity)).call(this, PIXI.Texture.EMPTY));
+    var _this = _possibleConstructorReturn(this, (Entity.__proto__ || Object.getPrototypeOf(Entity)).call(this));
 
     Object.assign(_this, props);
 
     _this.manager = manager;
+    _this.anchor.set(.5);
     _this.x = x;
     _this.y = y;
-    _this.anchor.set(.5);
-
-    _this.isGround = false;
     _this.dx = 0;
     _this.dy = 0;
+
+    // flags
+    _this.isSolid = true;
+    _this.isDead = false;
+    _this.isCollision = true;
+    _this.isGround = false;
     return _this;
   }
 
   _createClass(Entity, [{
-    key: 'update',
-    value: function update(dt) {
+    key: 'updateEntity',
+    value: function updateEntity(dt) {
       this.dy += this.manager.level.gravity * dt;
 
       this.x += this.dx * dt;
-      this.checkCollisionAreas(0);
+      this.isCollision && this.checkCollisionAreas(0);
 
       this.y += this.dy * dt;
-      this.checkCollisionAreas(1);
-      this.checkCollisionEntities();
+      this.isCollision && this.checkCollisionAreas(1);
+      this.isCollision && this.checkCollisionEntities();
       this.updateBehavior(dt);
     }
   }, {
@@ -42898,7 +42967,8 @@ var Entity = function (_PIXI$Sprite) {
         var obj = this.manager.objects[i];
         var rectEntity = this.getCollisionBounds();
         if (_utils2.default.checkRectsCollision(rectEntity, obj)) {
-          if (obj.name === 'solid') {
+          if (obj.name === 'solid' && this.isSolid) {
+            this.rotation = 0;
             if (this.dy > 0 && dir) {
               this.y = obj.top - this.collisionArea.height + this.height / 2;
               this.isGround = true;
@@ -42914,25 +42984,27 @@ var Entity = function (_PIXI$Sprite) {
               this.x = obj.left - this.collisionArea.width - this.collisionArea.x + this.width / 2;
               this.dx = 0;
             }
-          } else if (obj.name === 'jump') {
-            if (this.isGround) this.dy = -45;
-          } else if (obj.name === 'slopeRight') {
-            var dtX = obj.x - (rectEntity.x + this.collisionArea.width);
-            var dtY = Math.abs(obj.height * dtX / obj.width);
-            if (this.y > obj.y + obj.height - dtY - this.collisionArea.height) {
+          } else if (obj.name === 'slopeRight' && this.isSolid) {
+            var dtX = Math.abs(obj.x - (rectEntity.x + this.collisionArea.width));
+            var dtY = obj.height * dtX / obj.width;
+            if (rectEntity.y > obj.y + obj.height - dtY - this.collisionArea.height) {
               this.y = obj.y + obj.height - dtY - this.collisionArea.height + this.height / 2;
               this.isGround = true;
+              // this.rotation = PIXI.DEG_TO_RAD*-20;
               this.dy = 0;
             }
-          } else if (obj.name === 'slopeLeft') {
-            var _dtX = obj.width - (rectEntity.x + this.collisionArea.width);
-            var _dtY = Math.abs(obj.height * _dtX / obj.width);
-            if (rectEntity.y > obj.y + obj.height - _dtY - this.collisionArea.height) {
-              this.y = obj.y + obj.height - _dtY - this.collisionArea.height + this.height / 2;
+          } else if (obj.name === 'slopeLeft' && this.isSolid) {
+            var _dtX = Math.abs(obj.x - (rectEntity.x + this.collisionArea.width));
+            var _dtY = obj.height * _dtX / obj.width;
+            if (rectEntity.y > obj.y + _dtY - this.collisionArea.height - 20) {
+              this.y = obj.y + _dtY - this.collisionArea.height + this.height / 2 - 20;
               this.isGround = true;
+              // this.rotation = PIXI.DEG_TO_RAD*20;
               this.dy = 0;
             }
             break;
+          } else if (obj.name === 'jump') {
+            if (this.isGround) this.dy = -45;
           }
           this.onCollide(obj, dir);
         }
@@ -42941,10 +43013,10 @@ var Entity = function (_PIXI$Sprite) {
   }]);
 
   return Entity;
-}(PIXI.Sprite);
+}(_AnimationController3.default);
 
 exports.default = Entity;
-},{"pixi.js":"node_modules\\pixi.js\\lib\\index.js","../utils":"src\\utils\\index.js"}],"src\\utils\\keymaster.js":[function(require,module,exports) {
+},{"pixi.js":"node_modules\\pixi.js\\lib\\index.js","../utils":"src\\utils\\index.js","../managers/AnimationController":"src\\managers\\AnimationController.js"}],"src\\utils\\keymaster.js":[function(require,module,exports) {
 var global = arguments[3];
 //     keymaster.js
 //     (c) 2011-2013 Thomas Fuchs
@@ -43291,7 +43363,25 @@ var Player = function (_Entity) {
 
     var _this = _possibleConstructorReturn(this, (Player.__proto__ || Object.getPrototypeOf(Player)).call(this, manager, x, y, properties));
 
-    _this.texture = PIXI.Texture.fromFrame('alienPink_front.png');
+    _this.addAnimation('walk', {
+      images: ['alienPink_walk1.png', 'alienPink_walk2.png'],
+      speed: .1
+    });
+    _this.addAnimation('jump', {
+      images: ['alienPink_jump.png'],
+      speed: .1
+    });
+    _this.addAnimation('stand', {
+      images: ['alienPink_stand.png'],
+      speed: .1
+    });
+    _this.addAnimation('hit', {
+      images: ['alienPink_hit.png'],
+      speed: 1
+    });
+    _this.setAnimation('stand');
+
+    _this.STATE = 'stand';
 
     _this.collisionArea = new PIXI.Rectangle(40, 0, _this.width - 80, _this.height);
     return _this;
@@ -43300,18 +43390,41 @@ var Player = function (_Entity) {
   _createClass(Player, [{
     key: 'updateBehavior',
     value: function updateBehavior() {
-      if (_keymaster2.default.isPressed('d')) this.dx = 10;else if (_keymaster2.default.isPressed('a')) this.dx = -10;else this.dx = 0;
+      // state machine
+      if (this.STATE === 'stand') this.setAnimation('stand');else if (this.STATE === 'walk') this.setAnimation('walk');else if (this.STATE === 'jump') this.setAnimation('jump');else if (this.STATE === 'hit') this.setAnimation('hit');
 
+      if (this.isDead) return;
+
+      this.manager.level.camera.fallow(this);
+      if (_keymaster2.default.isPressed('d')) {
+        this.dx = 10;
+        this.STATE = 'walk';
+        this.scale.x = 1;
+      } else if (_keymaster2.default.isPressed('a')) {
+        this.dx = -10;
+        this.STATE = 'walk';
+        this.scale.x = -1;
+      } else {
+        this.STATE = 'stand';
+        this.dx = 0;
+      }
       if (_keymaster2.default.isPressed('w') && this.isGround) {
         this.dy = -24;
         this.isGround = false;
       }
-      this.manager.level.camera.fallow(this);
+      if (!this.isGround) this.STATE = 'jump';
     }
   }, {
     key: 'onCollide',
     value: function onCollide(obj) {
-      if (obj.name === 'slime' || obj.name === 'dead') this.manager.level.restart();
+      if (obj.name === 'slime' || obj.name === 'dead') {
+        this.STATE = 'hit';
+        this.isCollision = false;
+        this.isDead = true;
+        this.dy = -10;
+        this.manager.level.restart();
+      }
+
       if (obj.name === 'exit') this.manager.level.complete();
       if (obj.name === 'zoomCamera') {
         this.manager.level.camera.zoom(obj.zoom, 400);
@@ -43353,7 +43466,11 @@ var Slime = function (_Entity) {
 
     var _this = _possibleConstructorReturn(this, (Slime.__proto__ || Object.getPrototypeOf(Slime)).call(this, manager, x, y, w, h, properties));
 
-    _this.texture = PIXI.Texture.fromFrame('slimeGreen.png');
+    _this.addAnimation('walk', {
+      images: ['slimeGreen.png', 'slimeGreen_move.png'],
+      speed: .1
+    });
+    _this.setAnimation('walk');
 
     _this.collisionArea = new PIXI.Rectangle(0, 0, _this.width, _this.height);
     _this.dir = -3;
@@ -43476,13 +43593,13 @@ var EntitiesManager = function (_PIXI$Container) {
     key: 'removeArea',
     value: function removeArea(area) {
       var index = this.objects.indexOf(area);
-      if (index !== -1) this.objects.slice(index, 1);
+      if (index !== -1) this.objects.splice(index, 1);
     }
   }, {
     key: 'update',
     value: function update(dt) {
       for (var i = 0; i < this.children.length; i++) {
-        this.children[i].update(dt);
+        this.children[i].updateEntity(dt);
       }
     }
   }]);
@@ -43495,7 +43612,7 @@ exports.default = EntitiesManager;
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+  value: true
 });
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -43527,57 +43644,65 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var Playground = function (_PIXI$Container) {
-    _inherits(Playground, _PIXI$Container);
+  _inherits(Playground, _PIXI$Container);
 
-    function Playground(scenes) {
-        var level = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
+  function Playground(scenes) {
+    var level = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
 
-        _classCallCheck(this, Playground);
+    _classCallCheck(this, Playground);
 
-        var _this = _possibleConstructorReturn(this, (Playground.__proto__ || Object.getPrototypeOf(Playground)).call(this));
+    var _this = _possibleConstructorReturn(this, (Playground.__proto__ || Object.getPrototypeOf(Playground)).call(this));
 
-        _this.scenes = scenes;
-        _this.world = scenes.world;
+    _this.scenes = scenes;
+    _this.world = scenes.world;
 
-        _this.levelCount = level;
-        _this.levelData = PIXI.loader.resources['level' + level].data;
+    _this.levelCount = level;
+    _this.levelData = PIXI.loader.resources['level' + level].data;
 
-        _this.gravity = 1;
+    _this.gravity = 1;
 
-        _this.camera = new _Camera2.default(_this);
-        _this.background = new PIXI.extras.TilingSprite(PIXI.Texture.fromImage(_this.levelData.properties.background), _this.world.screen.width, _this.world.screen.height);
-        _this.entities = new _EntitiesManager2.default(_this, _this.levelData);
-        _this.tilemap = new _TileMap2.default(_this, _this.levelData);
+    _this.camera = new _Camera2.default(_this);
+    _this.background = new PIXI.extras.TilingSprite(PIXI.Texture.fromImage(_this.levelData.properties.background), _this.world.screen.width, _this.world.screen.height);
+    _this.entities = new _EntitiesManager2.default(_this, _this.levelData);
+    _this.tilemap = new _TileMap2.default(_this, _this.levelData);
 
-        _this.addChild(_this.background);
-        _this.addChild(_this.camera);
-        _this.camera.addChild(_this.tilemap);
-        _this.camera.addChild(_this.entities);
-        return _this;
+    _this.addChild(_this.background);
+    _this.addChild(_this.camera);
+    _this.camera.addChild(_this.tilemap);
+    _this.camera.addChild(_this.entities);
+    return _this;
+  }
+
+  _createClass(Playground, [{
+    key: 'update',
+    value: function update(dt) {
+      this.tilemap.update(dt);
+      this.entities.update(dt);
+      this.camera.update(dt);
+      this.background.tilePosition.x = this.camera.pivot.x / 50;
     }
+  }, {
+    key: 'restart',
+    value: function restart() {
+      var _this2 = this;
 
-    _createClass(Playground, [{
-        key: 'update',
-        value: function update(dt) {
-            this.tilemap.update(dt);
-            this.entities.update(dt);
-            this.camera.update(dt);
-            this.background.tilePosition.x = this.camera.pivot.x / 50;
-        }
-    }, {
-        key: 'restart',
-        value: function restart() {
-            this.scenes.set('playground', this.levelCount);
-        }
-    }, {
-        key: 'complete',
-        value: function complete() {
-            this.world.storage.set('level', this.levelCount++);
-            this.scenes.set('playground', this.levelCount);
-        }
-    }]);
+      this.scenes.splash(0xFFFFFF, 2000, function () {
+        _this2.scenes.set('playground', _this2.levelCount);
+      });
+    }
+  }, {
+    key: 'complete',
+    value: function complete() {
+      var _this3 = this;
 
-    return Playground;
+      this.scenes.splash(0xFFFFFF, 2000, function () {
+        _this3.world.storage.set('level', _this3.levelCount + 1);
+        _this3.scenes.set('playground', _this3.levelCount + 1);
+      });
+    }
+  }]);
+
+  return Playground;
 }(PIXI.Container);
 
 exports.default = Playground;
@@ -43619,6 +43744,10 @@ var _scenes = require('../scenes');
 
 var _scenes2 = _interopRequireDefault(_scenes);
 
+var _tween = require('@tweenjs/tween.js');
+
+var _tween2 = _interopRequireDefault(_tween);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
@@ -43640,18 +43769,35 @@ var Scenes = function (_PIXI$Container) {
     _this.world = world;
     _this.world.stage.addChild(_this);
 
+    _this.grph = new PIXI.Graphics();
+    _this.grph.alpha = 0;
+    _this.world.stage.addChild(_this.grph);
+
     _this.currentScene = null;
     return _this;
   }
 
   _createClass(Scenes, [{
+    key: 'splash',
+    value: function splash(color, time, onShow, onHide) {
+      this.grph.beginFill(color);
+      this.grph.drawRect(0, 0, this.world.screen.width, this.world.screen.height);
+      var tweenShow = new _tween2.default.Tween(this.grph).to({ alpha: 1 }, time / 2).onComplete(function () {
+        return onShow && onShow();
+      }).start();
+      var tweenHide = new _tween2.default.Tween(this.grph).to({ alpha: 0 }, time / 2).onComplete(function () {
+        return onHide && onHide();
+      }).start();
+      tweenShow.chain(tweenHide);
+    }
+  }, {
     key: 'set',
-    value: function set(name) {
+    value: function set(name, props) {
       if (!_scenes2.default[name]) throw Error('Scene' + name + ' is not defined');
 
       this.removeChild(this.currentScene);
-      this.currentScene = new _scenes2.default[name](this);
-      this.addChild(this.currentScene);
+      this.currentScene = new _scenes2.default[name](this, props);
+      this.addChildAt(this.currentScene, 0);
     }
   }, {
     key: 'update',
@@ -43664,12 +43810,14 @@ var Scenes = function (_PIXI$Container) {
 }(PIXI.Container);
 
 exports.default = Scenes;
-},{"pixi.js":"node_modules\\pixi.js\\lib\\index.js","../scenes":"src\\scenes\\index.js"}],"src\\managers\\Storage.js":[function(require,module,exports) {
+},{"pixi.js":"node_modules\\pixi.js\\lib\\index.js","../scenes":"src\\scenes\\index.js","@tweenjs/tween.js":"node_modules\\@tweenjs\\tween.js\\src\\Tween.js"}],"src\\managers\\Storage.js":[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _pixi = require('pixi.js');
 
@@ -43679,9 +43827,25 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Store = function Store(world) {
-  _classCallCheck(this, Store);
-};
+var Store = function () {
+  function Store(world) {
+    _classCallCheck(this, Store);
+  }
+
+  _createClass(Store, [{
+    key: 'set',
+    value: function set(name, val) {
+      localStorage.setItem(name, val);
+    }
+  }, {
+    key: 'get',
+    value: function get(name) {
+      return localStorage.getItem(name);
+    }
+  }]);
+
+  return Store;
+}();
 
 exports.default = Store;
 },{"pixi.js":"node_modules\\pixi.js\\lib\\index.js"}],"src\\World.js":[function(require,module,exports) {
@@ -43762,7 +43926,7 @@ var _World2 = _interopRequireDefault(_World);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-PIXI.loader.add('spritesheet_tiles.png', 'assets/spritesheet_tiles.png').add('spritesheet_ground.png', 'assets/spritesheet_ground.png').add('blue_grass.png', 'assets/blue_grass.png').add('sprites', 'assets/sprites.json').add('menu', 'assets/menu.json').add('level1', 'assets/level1.json').load(onAssetsLoaded);
+PIXI.loader.add('spritesheet_tiles.png', 'assets/spritesheet_tiles.png').add('spritesheet_ground.png', 'assets/spritesheet_ground.png').add('blue_grass.png', 'assets/blue_grass.png').add('sprites', 'assets/sprites.json').add('menu', 'assets/menu.json').add('level1', 'assets/level1.json').add('level2', 'assets/level2.json').load(onAssetsLoaded);
 
 function onAssetsLoaded(res) {
     console.log(res);
@@ -43798,7 +43962,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '54872' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '64900' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 

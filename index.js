@@ -7,6 +7,7 @@ PIXI.loader
     .add('sprites', 'assets/sprites.json')
     .add('menu', 'assets/menu.json')
     .add('level1', 'assets/level1.json')
+    .add('level2', 'assets/level2.json')
     .load(onAssetsLoaded);
 
 function onAssetsLoaded(res) {

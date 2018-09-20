@@ -3,7 +3,12 @@ import Entity from './Entity'
 export default class Slime extends Entity {
   constructor(manager, x, y, w, h, properties) {
     super(manager, x, y, w, h, properties);
-    this.texture = PIXI.Texture.fromFrame('slimeGreen.png');
+
+    this.addAnimation('walk', {
+      images: ['slimeGreen.png', 'slimeGreen_move.png'],
+      speed: .1
+    });
+    this.setAnimation('walk');
 
     this.collisionArea = new PIXI.Rectangle(0, 0, this.width, this.height);
     this.dir = -3;

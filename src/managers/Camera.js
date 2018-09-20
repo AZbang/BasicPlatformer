@@ -10,7 +10,6 @@ export default class Camera extends PIXI.Container {
     this.pivot.set(obj.x+obj.width/2, obj.y);
   }
   zoom(scale, time) {
-    if(this.scale.x === scale) return;
     new TWEEN.Tween(this.scale)
       .to({x: scale, y: scale}, time)
       .start();

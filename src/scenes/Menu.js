@@ -16,7 +16,7 @@ export default class Menu extends PIXI.Container {
     this.label.interactive = true;
     this.label.cursor = 'pointer';
     this.label.pointertap = () => {
-      scenes.set('playground');
+      scenes.set('playground', this.world.storage.get('level'));
     }
 
     this.menuData = PIXI.loader.resources['menu'].data;

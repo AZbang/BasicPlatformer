@@ -1,29 +1,34 @@
 import * as PIXI from 'pixi.js';
 import utils from '../utils';
+import AnimationController from '../managers/AnimationController';
 
-export default class Entity extends PIXI.Sprite {
+export default class Entity extends AnimationController {
   constructor(manager, x, y, props) {
-    super(PIXI.Texture.EMPTY);
+    super();
     Object.assign(this, props);
 
     this.manager = manager;
+    this.anchor.set(.5);
     this.x = x;
     this.y = y;
-    this.anchor.set(.5);
-
-    this.isGround = false;
     this.dx = 0;
     this.dy = 0;
+
+    // flags
+    this.isSolid = true;
+    this.isDead = false;
+    this.isCollision = true;
+    this.isGround = false;
   }
-  update(dt) {
+  updateEntity(dt) {
     this.dy += this.manager.level.gravity*dt;
 
     this.x += this.dx*dt;
-    this.checkCollisionAreas(0);
+    this.isCollision && this.checkCollisionAreas(0);
 
     this.y += this.dy*dt;
-    this.checkCollisionAreas(1);
-    this.checkCollisionEntities();
+    this.isCollision && this.checkCollisionAreas(1);
+    this.isCollision && this.checkCollisionEntities();
     this.updateBehavior(dt);
   }
   getCollisionBounds() {
@@ -46,7 +51,8 @@ export default class Entity extends PIXI.Sprite {
       let obj = this.manager.objects[i];
       let rectEntity = this.getCollisionBounds();
       if(utils.checkRectsCollision(rectEntity, obj)) {
-        if(obj.name === 'solid') {
+        if(obj.name === 'solid' && this.isSolid) {
+          this.rotation = 0;
           if(this.dy > 0 && dir) {
             this.y = obj.top-this.collisionArea.height+this.height/2;
             this.isGround = true;
@@ -63,27 +69,29 @@ export default class Entity extends PIXI.Sprite {
             this.dx = 0;
           }
         }
-        else if(obj.name === 'jump') {
-          if(this.isGround) this.dy = -45;
-        }
-        else if(obj.name === 'slopeRight') {
-          let dtX = obj.x-(rectEntity.x+this.collisionArea.width);
-          let dtY = Math.abs(obj.height*dtX/obj.width);
-          if(this.y > obj.y+obj.height-dtY-this.collisionArea.height) {
-            this.y = obj.y+obj.height-dtY-this.collisionArea.height+this.height/2;
-            this.isGround = true;
-            this.dy = 0;
-          }
-        }
-        else if(obj.name === 'slopeLeft') {
-          let dtX = obj.width-(rectEntity.x+this.collisionArea.width);
-          let dtY = Math.abs(obj.height*dtX/obj.width);
+        else if(obj.name === 'slopeRight' && this.isSolid) {
+          let dtX = Math.abs(obj.x-(rectEntity.x+this.collisionArea.width));
+          let dtY = obj.height*dtX/obj.width;
           if(rectEntity.y > obj.y+obj.height-dtY-this.collisionArea.height) {
             this.y = obj.y+obj.height-dtY-this.collisionArea.height+this.height/2;
             this.isGround = true;
+            // this.rotation = PIXI.DEG_TO_RAD*-20;
+            this.dy = 0;
+          }
+        }
+        else if(obj.name === 'slopeLeft' && this.isSolid) {
+          let dtX = Math.abs(obj.x-(rectEntity.x+this.collisionArea.width));
+          let dtY = obj.height*dtX/obj.width;
+          if(rectEntity.y > obj.y+dtY-this.collisionArea.height-20) {
+            this.y = obj.y+dtY-this.collisionArea.height+this.height/2-20;
+            this.isGround = true;
+            // this.rotation = PIXI.DEG_TO_RAD*20;
             this.dy = 0;
           }
           break;
+        }
+        else if(obj.name === 'jump') {
+          if(this.isGround) this.dy = -45;
         }
         this.onCollide(obj, dir);
       }
