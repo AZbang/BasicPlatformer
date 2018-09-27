@@ -2,19 +2,17 @@ import * as PIXI from 'pixi.js';
 import TWEEN from '@tweenjs/tween.js';
 
 export default class Camera extends PIXI.Container {
-  constructor(scene) {
+  constructor(world) {
     super();
-    this.position.set(scene.world.screen.width/2, scene.world.screen.height/2);
+    this.position.set(world.screen.width/2, world.screen.height/2);
   }
-  fallow(obj) {
-    this.pivot.set(obj.x+obj.width/2, obj.y);
+  setPosition(point) {
+    this.pivot.set(point.x, point.y);
   }
+
   zoom(scale, time) {
     new TWEEN.Tween(this.scale)
       .to({x: scale, y: scale}, time)
       .start();
-  }
-  update(dt) {
-
   }
 }

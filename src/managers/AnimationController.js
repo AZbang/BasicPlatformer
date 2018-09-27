@@ -1,3 +1,5 @@
+import * as PIXI from 'pixi.js';
+
 export default class AnimationController extends PIXI.extras.AnimatedSprite {
   constructor() {
     super([PIXI.Texture.EMPTY]);
@@ -5,7 +7,7 @@ export default class AnimationController extends PIXI.extras.AnimatedSprite {
     this.animations = {};
     this.currentAnimation = null;
   }
-  addAnimation(name, data) {
+  addAnimation(name, data, play) {
     let anim = [];
     for(let i = 0; i < data.images.length; i++) {
       let texture = PIXI.Texture.fromImage(data.images[i]);
@@ -13,6 +15,7 @@ export default class AnimationController extends PIXI.extras.AnimatedSprite {
     }
     this.animations[name] = {frames: anim};
     Object.assign(this.animations[name], data);
+    play && this.setAnimation(name);
   }
   removeAnimation(name) {
     delete this.animations[name];
@@ -22,8 +25,7 @@ export default class AnimationController extends PIXI.extras.AnimatedSprite {
 
     this.currentAnimation = name;
     this.textures = this.animations[name].frames;
-    this.animationSpeed = this.animations[name].speed;
-    this.loop = this.animations[name].speed;
+    this.animationSpeed = this.animations[name].speed || 1;
     this.play();
     // ...add event bundlers and etc
   }

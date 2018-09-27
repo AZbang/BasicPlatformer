@@ -5,9 +5,9 @@ export default class Store {
 
   }
   set(name, val) {
-    localStorage.setItem(name, val);
+    localStorage.setItem(name, JSON.stringify(val));
   }
   get(name) {
-    return localStorage.getItem(name);
+    return JSON.parse(localStorage.getItem(name));
   }
 }

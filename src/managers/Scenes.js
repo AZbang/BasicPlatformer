@@ -24,14 +24,13 @@ export default class Scenes extends PIXI.Container {
     let tweenHide = new TWEEN.Tween(this.grph)
     	.to({alpha: 0}, time/2)
       .onComplete(() => onHide && onHide())
-    	.start();
     tweenShow.chain(tweenHide);
   }
   set(name, props) {
     if(!scenes[name]) throw Error('Scene' + name + ' is not defined');
 
     this.removeChild(this.currentScene);
-    this.currentScene = new scenes[name](this, props);
+    this.currentScene = new scenes[name](this.world, props);
     this.addChildAt(this.currentScene, 0);
   }
   update(dt) {
