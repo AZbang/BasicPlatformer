@@ -37,8 +37,8 @@ export default class Entity extends GraphicSprite {
     this.isCollision && this.checkCollisionEntities();
     this.updateBehavior(dt);
 
-    this.x = Math.round(this.body.x)-this.offsetBody.x+this.width/2;
-    this.y = Math.round(this.body.y)-this.offsetBody.y+this.height/2;
+    this.x = this.body.x-this.offsetBody.x+this.width/2;
+    this.y = this.body.y-this.offsetBody.y+this.height/2;
   }
   checkCollisionEntities() {
     for(let i = 0; i < this.map.entities.length; i++) {

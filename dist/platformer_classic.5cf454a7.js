@@ -42867,8 +42867,8 @@ var Entity = function (_GraphicSprite) {
       this.isCollision && this.checkCollisionEntities();
       this.updateBehavior(dt);
 
-      this.x = Math.round(this.body.x) - this.offsetBody.x + this.width / 2;
-      this.y = Math.round(this.body.y) - this.offsetBody.y + this.height / 2;
+      this.x = this.body.x - this.offsetBody.x + this.width / 2;
+      this.y = this.body.y - this.offsetBody.y + this.height / 2;
     }
   }, {
     key: 'checkCollisionEntities',
@@ -44076,10 +44076,12 @@ var World = function (_PIXI$Application) {
     var _this = _possibleConstructorReturn(this, (World.__proto__ || Object.getPrototypeOf(World)).call(this, {
       backgroundColor: 0xCCCCCC,
       width: window.innerWidth,
-      height: window.innerHeight
+      height: window.innerHeight,
+      roundPixels: true
     }));
 
     document.body.appendChild(_this.view);
+    PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
     _this.scenes = new _Scenes2.default(_this);
     _this.storage = new _Storage2.default(_this);
@@ -44145,7 +44147,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '61585' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '64183' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 

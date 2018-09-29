@@ -9,9 +9,11 @@ export default class World extends PIXI.Application {
     super({
       backgroundColor: 0xCCCCCC,
       width: window.innerWidth,
-      height: window.innerHeight
+      height: window.innerHeight,
+      roundPixels: true
     });
     document.body.appendChild(this.view);
+    PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
     this.scenes = new Scenes(this);
     this.storage = new Storage(this);
