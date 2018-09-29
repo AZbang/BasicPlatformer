@@ -42845,7 +42845,7 @@ var Entity = function (_GraphicSprite) {
     _this.isCollision = true;
 
     if (data.collider) {
-      _this.body = new PIXI.Rectangle(data.x, data.y, data.collider.width, data.collider.height);
+      _this.body = new PIXI.Rectangle(data.x, data.y - _this.height, data.collider.width, data.collider.height);
       _this.offsetBody = new PIXI.Point(data.collider.x, data.collider.y);
     } else {
       _this.body = new PIXI.Rectangle(_this.x, _this.y, _this.width, _this.height);
@@ -42857,18 +42857,18 @@ var Entity = function (_GraphicSprite) {
   _createClass(Entity, [{
     key: 'updateEntity',
     value: function updateEntity(dt) {
+      this.x = this.body.x - this.offsetBody.x + this.width / 2;
+      this.y = this.body.y - this.offsetBody.y + this.height / 2;
+
       if (this.isGravity) this.dy += this.map.gravity * dt;
 
       this.body.x += this.dx * dt;
-      this.isCollision && this.checkCollisionAreas(0);
+      this.isCollision && !this.isDead && this.checkCollisionAreas(0);
 
       this.body.y += this.dy * dt;
-      this.isCollision && this.checkCollisionAreas(1);
-      this.isCollision && this.checkCollisionEntities();
+      this.isCollision && !this.isDead && this.checkCollisionAreas(1);
+      this.isCollision && !this.isDead && this.checkCollisionEntities();
       this.updateBehavior(dt);
-
-      this.x = this.body.x - this.offsetBody.x + this.width / 2;
-      this.y = this.body.y - this.offsetBody.y + this.height / 2;
     }
   }, {
     key: 'checkCollisionEntities',
@@ -43355,15 +43355,18 @@ var Player = function (_Entity) {
       if (!this.isGround && !this.isLadderCollide) this.STATE = 'jump';
     }
   }, {
+    key: 'dead',
+    value: function dead() {
+      this.STATE = 'hit';
+      this.isCollision = false;
+      this.isDead = true;
+      this.dy = -10;
+      this.map.restartLevel();
+    }
+  }, {
     key: 'onCollide',
     value: function onCollide(obj) {
-      if (obj.name === 'slime' || obj.name === 'dead') {
-        this.STATE = 'hit';
-        this.isCollision = false;
-        this.isDead = true;
-        this.dy = -10;
-        this.map.restartLevel();
-      }
+      if (obj.name === 'dead') this.dead();
 
       if (obj.name === 'jump') {
         if (this.isGround) this.dy = -45;
@@ -43418,7 +43421,7 @@ var Slime = function (_Entity) {
 
     _this.speed = data.properties.speed || 3;
     _this.dir = data.properties.dir || -1;
-    _this.path = data.properties.move * 128 || 3 * 128;
+    _this.path = data.properties.path * 128 || 3 * 128;
     _this._move = 0;
     return _this;
   }
@@ -43430,13 +43433,15 @@ var Slime = function (_Entity) {
 
       if (this._move >= this.path) {
         this._move = 0;
+        this.scale.x *= -1;
         this.dir *= -1;
-      } else this._move += this.dx;
+      } else this._move += Math.abs(this.dx);
     }
   }, {
     key: 'onCollide',
     value: function onCollide(obj) {
       if (obj.name === 'dead') this.map.removeEntity(this);
+      if (obj.name === 'player') obj.dead();
     }
   }]);
 
@@ -43554,6 +43559,75 @@ var Coin = function (_Entity) {
 }(_Entity3.default);
 
 exports.default = Coin;
+},{"./Entity":"src\\objects\\Entity.js"}],"src\\objects\\Bee.js":[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Entity2 = require('./Entity');
+
+var _Entity3 = _interopRequireDefault(_Entity2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Slime = function (_Entity) {
+  _inherits(Slime, _Entity);
+
+  function Slime(map, data) {
+    _classCallCheck(this, Slime);
+
+    var _this = _possibleConstructorReturn(this, (Slime.__proto__ || Object.getPrototypeOf(Slime)).call(this, map, data));
+
+    _this.addAnimation('walk', {
+      images: ['bee.png', 'bee_move.png'],
+      speed: .1
+    });
+    _this.setAnimation('walk');
+
+    _this.isGravity = false;
+    _this.speed = data.properties.speed || 3;
+    _this.dir = data.properties.dir || -1;
+    _this.path = data.properties.path * 128 || 3 * 128;
+    _this._move = 0;
+    _this._i = 0;
+    return _this;
+  }
+
+  _createClass(Slime, [{
+    key: 'updateBehavior',
+    value: function updateBehavior(dt) {
+      this.dx = this.dir * this.speed;
+      this._i += .1;
+      this.body.y += Math.sin(this._i);
+
+      if (this._move >= this.path) {
+        this._move = 0;
+        this.dir *= -1;
+        this.scale.x *= -1;
+      } else this._move += Math.abs(this.dx);
+    }
+  }, {
+    key: 'onCollide',
+    value: function onCollide(obj) {
+      if (obj.name === 'dead') this.map.removeEntity(this);
+      if (obj.name === 'player') obj.dead();
+    }
+  }]);
+
+  return Slime;
+}(_Entity3.default);
+
+exports.default = Slime;
 },{"./Entity":"src\\objects\\Entity.js"}],"src\\objects\\index.js":[function(require,module,exports) {
 'use strict';
 
@@ -43577,15 +43651,20 @@ var _Coin = require('./Coin');
 
 var _Coin2 = _interopRequireDefault(_Coin);
 
+var _Bee = require('./Bee');
+
+var _Bee2 = _interopRequireDefault(_Bee);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = {
   'player': _Player2.default,
   'slime': _Slime2.default,
   'movePlatform': _MovePlatform2.default,
-  'coin': _Coin2.default
+  'coin': _Coin2.default,
+  'bee': _Bee2.default
 };
-},{"./Player":"src\\objects\\Player.js","./Slime":"src\\objects\\Slime.js","./MovePlatform":"src\\objects\\MovePlatform.js","./Coin":"src\\objects\\Coin.js"}],"src\\managers\\TiledMap.js":[function(require,module,exports) {
+},{"./Player":"src\\objects\\Player.js","./Slime":"src\\objects\\Slime.js","./MovePlatform":"src\\objects\\MovePlatform.js","./Coin":"src\\objects\\Coin.js","./Bee":"src\\objects\\Bee.js"}],"src\\managers\\TiledMap.js":[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -44147,7 +44226,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '64183' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '65067' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 

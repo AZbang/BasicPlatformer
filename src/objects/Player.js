@@ -71,15 +71,16 @@ export default class Player extends Entity {
     }
     if(!this.isGround && !this.isLadderCollide) this.STATE = 'jump';
   }
+  dead() {
+    this.STATE = 'hit';
+    this.isCollision = false;
+    this.isDead = true;
+    this.dy = -10;
+    this.map.restartLevel();
+  }
   onCollide(obj) {
-    if(obj.name === 'slime' || obj.name === 'dead') {
-      this.STATE = 'hit';
-      this.isCollision = false;
-      this.isDead = true;
-      this.dy = -10;
-      this.map.restartLevel();
-    }
-
+    if(obj.name === 'dead') this.dead();
+    
     if(obj.name === 'jump') {
       if(this.isGround) this.dy = -45;
     }

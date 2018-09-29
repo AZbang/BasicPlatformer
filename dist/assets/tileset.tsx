@@ -39,6 +39,9 @@
  </tile>
  <tile id="265">
   <image width="128" height="128" source="sprites/bee.png"/>
+  <objectgroup draworder="index">
+   <object id="1" x="15" y="30" width="93" height="82"/>
+  </objectgroup>
  </tile>
  <tile id="266">
   <image width="128" height="128" source="sprites/bee_dead.png"/>
@@ -445,6 +448,9 @@
  </tile>
  <tile id="398">
   <image width="128" height="128" source="sprites/slimeGreen.png"/>
+  <objectgroup draworder="index">
+   <object id="1" x="25" y="67" width="76" height="58"/>
+  </objectgroup>
  </tile>
  <tile id="399">
   <image width="128" height="128" source="sprites/slimeGreen_dead.png"/>

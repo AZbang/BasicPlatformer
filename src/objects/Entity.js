@@ -19,7 +19,7 @@ export default class Entity extends GraphicSprite {
     this.isCollision = true;
 
     if(data.collider) {
-      this.body = new PIXI.Rectangle(data.x, data.y, data.collider.width, data.collider.height);
+      this.body = new PIXI.Rectangle(data.x, data.y-this.height, data.collider.width, data.collider.height);
       this.offsetBody = new PIXI.Point(data.collider.x, data.collider.y);
     } else {
       this.body = new PIXI.Rectangle(this.x, this.y, this.width, this.height);
@@ -27,18 +27,18 @@ export default class Entity extends GraphicSprite {
     }
   }
   updateEntity(dt) {
+    this.x = this.body.x-this.offsetBody.x+this.width/2;
+    this.y = this.body.y-this.offsetBody.y+this.height/2;
+    
     if(this.isGravity) this.dy += this.map.gravity*dt;
 
     this.body.x += this.dx*dt;
-    this.isCollision && this.checkCollisionAreas(0);
+    this.isCollision && !this.isDead && this.checkCollisionAreas(0);
 
     this.body.y += this.dy*dt;
-    this.isCollision && this.checkCollisionAreas(1);
-    this.isCollision && this.checkCollisionEntities();
+    this.isCollision && !this.isDead && this.checkCollisionAreas(1);
+    this.isCollision && !this.isDead && this.checkCollisionEntities();
     this.updateBehavior(dt);
-
-    this.x = this.body.x-this.offsetBody.x+this.width/2;
-    this.y = this.body.y-this.offsetBody.y+this.height/2;
   }
   checkCollisionEntities() {
     for(let i = 0; i < this.map.entities.length; i++) {
