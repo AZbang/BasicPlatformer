@@ -210,6 +210,9 @@
  </tile>
  <tile id="322">
   <image width="128" height="128" source="sprites/gemRed.png"/>
+  <objectgroup draworder="index">
+   <object id="1" x="33" y="42" width="57" height="42"/>
+  </objectgroup>
  </tile>
  <tile id="323">
   <image width="128" height="128" source="sprites/grass.png"/>
@@ -478,6 +481,9 @@
  </tile>
  <tile id="410">
   <image width="128" height="128" source="sprites/star.png"/>
+  <objectgroup draworder="index">
+   <object id="1" x="39" y="38" width="51" height="54"/>
+  </objectgroup>
  </tile>
  <tile id="411">
   <image width="128" height="128" source="sprites/stone.png"/>

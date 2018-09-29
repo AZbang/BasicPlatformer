@@ -698,7 +698,7 @@
                  "y":1716
                 }, 
                 {
-                 "height":32,
+                 "height":8,
                  "id":381,
                  "name":"platform",
                  "rotation":0,
@@ -709,7 +709,7 @@
                  "y":1664
                 }, 
                 {
-                 "height":30,
+                 "height":6,
                  "id":382,
                  "name":"platform",
                  "rotation":0,
@@ -720,7 +720,7 @@
                  "y":1536
                 }, 
                 {
-                 "height":28,
+                 "height":7,
                  "id":383,
                  "name":"platform",
                  "rotation":0,
@@ -731,7 +731,7 @@
                  "y":1408
                 }, 
                 {
-                 "height":32,
+                 "height":8,
                  "id":384,
                  "name":"platform",
                  "rotation":0,
@@ -742,7 +742,7 @@
                  "y":1152
                 }, 
                 {
-                 "height":32,
+                 "height":8,
                  "id":385,
                  "name":"platform",
                  "rotation":0,

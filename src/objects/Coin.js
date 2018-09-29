@@ -10,11 +10,11 @@ export default class Coin extends Entity {
   }
   updateBehavior(dt) {
     this._i += .1;
-    this.y += Math.sin(this._i);
+    this.body.y += Math.sin(this._i);
   }
   onCollide(obj) {
     if(obj.name === 'player') {
-      obj.addScore(this.score);
+      this.map.addScore(this.score);
       this.map.removeEntity(this);
     }
   }

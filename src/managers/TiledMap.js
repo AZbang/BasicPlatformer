@@ -80,7 +80,7 @@ export default class TiledMap extends PIXI.Container {
   removeEntity(entity) {
     const index = this.entities.indexOf(entity);
     if(index !== -1) this.entities.splice(index, 1);
-    this.removeChild(entity);
+    this.camera.removeChild(entity);
   }
   newEntity(data) {
     let tile = this.tileset.tiles[data.gid-1];
@@ -89,6 +89,7 @@ export default class TiledMap extends PIXI.Container {
       name: data.name,
       x: data.x || 0,
       y: data.y || 0,
+      name: data.name,
       width: data.width,
       height: data.height,
       alpha: data.opacity,

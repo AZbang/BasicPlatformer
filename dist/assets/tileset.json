@@ -48,8 +48,8 @@
                      "type":"",
                      "visible":true,
                      "width":69,
-                     "x":29,
-                     "y":110
+                     "x":26,
+                     "y":111
                     }],
              "opacity":1,
              "type":"objectgroup",
@@ -446,7 +446,29 @@
         {
          "image":"gemRed.png",
          "imageheight":128,
-         "imagewidth":128
+         "imagewidth":128,
+         "objectgroup":
+            {
+             "draworder":"index",
+             "name":"",
+             "objects":[
+                    {
+                     "height":42,
+                     "id":1,
+                     "name":"",
+                     "rotation":0,
+                     "type":"",
+                     "visible":true,
+                     "width":57,
+                     "x":33,
+                     "y":42
+                    }],
+             "opacity":1,
+             "type":"objectgroup",
+             "visible":true,
+             "x":0,
+             "y":0
+            }
         },
      "323":
         {
@@ -798,6 +820,15 @@
         },
      "381":
         {
+         "animation":[
+                {
+                 "duration":100,
+                 "tileid":381
+                },
+                {
+                 "duration":100,
+                 "tileid":383
+                }],
          "image":"saw.png",
          "imageheight":128,
          "imagewidth":128
@@ -974,7 +1005,29 @@
         {
          "image":"star.png",
          "imageheight":128,
-         "imagewidth":128
+         "imagewidth":128,
+         "objectgroup":
+            {
+             "draworder":"index",
+             "name":"",
+             "objects":[
+                    {
+                     "height":54,
+                     "id":1,
+                     "name":"",
+                     "rotation":0,
+                     "type":"",
+                     "visible":true,
+                     "width":51,
+                     "x":39,
+                     "y":38
+                    }],
+             "opacity":1,
+             "type":"objectgroup",
+             "visible":true,
+             "x":0,
+             "y":0
+            }
         },
      "411":
         {

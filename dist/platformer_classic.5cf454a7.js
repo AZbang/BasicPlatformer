@@ -42749,8 +42749,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
 var _pixi = require('pixi.js');
 
 var PIXI = _interopRequireWildcard(_pixi);
@@ -42788,22 +42786,8 @@ var GraphicSprite = function (_AnimationController) {
     _this.height = data.height || 0;
     _this.rotation = data.rotation * PIXI.DEG_TO_RAD;
     _this.alpha = data.alpha != null ? data.alpha : 1;
-
-    if (data.collider) _this.collider = new PIXI.Rectangle(data.collider.x, data.collider.y, data.collider.width, _this.height);else _this.collider = new PIXI.Rectangle(0, 0, _this.width, _this.height);
     return _this;
   }
-
-  _createClass(GraphicSprite, [{
-    key: 'getColliderBounds',
-    value: function getColliderBounds() {
-      return {
-        x: this.x - this.width / 2 + this.collider.x,
-        y: this.y - this.height / 2 + this.collider.y,
-        width: this.collider.width,
-        height: this.collider.height
-      };
-    }
-  }]);
 
   return GraphicSprite;
 }(_AnimationController3.default);
@@ -42850,13 +42834,23 @@ var Entity = function (_GraphicSprite) {
 
     _this.dx = 0;
     _this.dy = 0;
+    _this.y -= _this.height;
 
+    _this.name = data.name;
     // flags
     _this.isSolid = true;
     _this.isDead = false;
     _this.isGravity = true;
     _this.isGround = false;
     _this.isCollision = true;
+
+    if (data.collider) {
+      _this.body = new PIXI.Rectangle(data.x, data.y, data.collider.width, data.collider.height);
+      _this.offsetBody = new PIXI.Point(data.collider.x, data.collider.y);
+    } else {
+      _this.body = new PIXI.Rectangle(_this.x, _this.y, _this.width, _this.height);
+      _this.offsetBody = new PIXI.Point(0, 0);
+    }
     return _this;
   }
 
@@ -42865,13 +42859,16 @@ var Entity = function (_GraphicSprite) {
     value: function updateEntity(dt) {
       if (this.isGravity) this.dy += this.map.gravity * dt;
 
-      this.x += this.dx * dt;
+      this.body.x += this.dx * dt;
       this.isCollision && this.checkCollisionAreas(0);
 
-      this.y += this.dy * dt;
+      this.body.y += this.dy * dt;
       this.isCollision && this.checkCollisionAreas(1);
       this.isCollision && this.checkCollisionEntities();
       this.updateBehavior(dt);
+
+      this.x = Math.round(this.body.x) - this.offsetBody.x + this.width / 2;
+      this.y = Math.round(this.body.y) - this.offsetBody.y + this.height / 2;
     }
   }, {
     key: 'checkCollisionEntities',
@@ -42879,7 +42876,7 @@ var Entity = function (_GraphicSprite) {
       for (var i = 0; i < this.map.entities.length; i++) {
         var entity = this.map.entities[i];
         if (entity.name === this.name) continue;
-        if (_utils2.default.checkRectsCollision(this.getColliderBounds(), entity.getColliderBounds())) this.onCollide(entity);
+        if (_utils2.default.checkRectsCollision(this.body, entity.body)) this.onCollide(entity);
       }
     }
   }, {
@@ -42887,49 +42884,48 @@ var Entity = function (_GraphicSprite) {
     value: function checkCollisionAreas(dir) {
       for (var i = 0; i < this.map.areas.length; i++) {
         var obj = this.map.areas[i];
-        var rectEntity = this.getColliderBounds();
 
-        if (_utils2.default.checkRectsCollision(rectEntity, obj)) {
+        if (_utils2.default.checkRectsCollision(this.body, obj)) {
           // check collision with Y
           if (obj.name === 'solid' && this.isSolid) {
             if (this.dy > 0 && dir) {
-              this.y = obj.top - this.collider.height + this.height / 2;
+              this.body.y = obj.top - this.body.height;
               this.isGround = true;
               this.dy = 0;
             } else if (this.dy < 0 && dir) {
-              this.y = obj.bottom + this.collider.y + this.height / 2;
+              this.body.y = obj.bottom;
               this.dy = 0;
             }
 
             // check collision with X
             if (this.dx < 0 && !dir) {
-              this.x = obj.right - this.collider.x + this.width / 2;
+              this.body.x = obj.right;
               this.dx = 0;
             } else if (this.dx > 0 && !dir) {
-              this.x = obj.left - this.collider.width - this.collider.x + this.width / 2;
+              this.body.x = obj.left - this.body.width;
               this.dx = 0;
             }
           }
 
           if (obj.name === 'platform' && this.isSolid) {
-            if (this.dy > 0 && dir && rectEntity.y + rectEntity.height / 2 < obj.y) {
-              this.y = obj.top - this.collider.height + this.height / 2;
+            if (this.dy > 0 && dir && this.body.y + this.body.height / 2 < obj.y) {
+              this.body.y = obj.top - this.body.height;
               this.isGround = true;
               this.dy = 0;
             }
           } else if (obj.name === 'slopeRight' && this.isSolid) {
-            var dtX = Math.abs(obj.x - (rectEntity.x + this.collider.width));
+            var dtX = Math.abs(obj.x - (this.body.x + this.body.width));
             var dtY = obj.height * dtX / obj.width;
-            if (rectEntity.y > obj.y + obj.height - dtY - this.collider.height) {
-              this.y = obj.y + obj.height - dtY - this.collider.height + this.height / 2;
+            if (this.body.y > obj.y + obj.height - dtY - this.body.height) {
+              this.body.y = obj.y + obj.height - dtY - this.body.height;
               this.isGround = true;
               this.dy = 0;
             }
           } else if (obj.name === 'slopeLeft' && this.isSolid) {
-            var _dtX = Math.abs(obj.x - (rectEntity.x + this.collider.width));
+            var _dtX = Math.abs(obj.x - (this.body.x + this.body.width));
             var _dtY = obj.height * _dtX / obj.width;
-            if (rectEntity.y > obj.y + _dtY - this.collider.height - 20) {
-              this.y = obj.y + _dtY - this.collider.height + this.height / 2 - 20;
+            if (this.body.y > obj.y + _dtY - this.body.height - 20) {
+              this.body.y = obj.y + _dtY - this.body.height - 20;
               this.isGround = true;
               this.dy = 0;
             }
@@ -43542,13 +43538,13 @@ var Coin = function (_Entity) {
     key: 'updateBehavior',
     value: function updateBehavior(dt) {
       this._i += .1;
-      this.y += Math.sin(this._i);
+      this.body.y += Math.sin(this._i);
     }
   }, {
     key: 'onCollide',
     value: function onCollide(obj) {
       if (obj.name === 'player') {
-        obj.addScore(this.score);
+        this.map.addScore(this.score);
         this.map.removeEntity(this);
       }
     }
@@ -43617,6 +43613,8 @@ var _GraphicSprite2 = _interopRequireDefault(_GraphicSprite);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -43719,25 +43717,20 @@ var TiledMap = function (_PIXI$Container) {
     value: function removeEntity(entity) {
       var index = this.entities.indexOf(entity);
       if (index !== -1) this.entities.splice(index, 1);
-      this.removeChild(entity);
+      this.camera.removeChild(entity);
     }
   }, {
     key: 'newEntity',
     value: function newEntity(data) {
+      var _ref;
+
       var tile = this.tileset.tiles[data.gid - 1];
 
-      var entity = new _objects2.default[data.name](this, {
+      var entity = new _objects2.default[data.name](this, (_ref = {
         name: data.name,
         x: data.x || 0,
-        y: data.y || 0,
-        width: data.width,
-        height: data.height,
-        alpha: data.opacity,
-        rotation: data.rotation,
-        frames: [tile.image],
-        properties: data.properties,
-        collider: tile.objectgroup ? tile.objectgroup.objects[0] : null
-      });
+        y: data.y || 0
+      }, _defineProperty(_ref, 'name', data.name), _defineProperty(_ref, 'width', data.width), _defineProperty(_ref, 'height', data.height), _defineProperty(_ref, 'alpha', data.opacity), _defineProperty(_ref, 'rotation', data.rotation), _defineProperty(_ref, 'frames', [tile.image]), _defineProperty(_ref, 'properties', data.properties), _defineProperty(_ref, 'collider', tile.objectgroup ? tile.objectgroup.objects[0] : null), _ref));
       this.entities.push(entity);
       this.camera.addChild(entity);
     }
@@ -43856,16 +43849,23 @@ var Playground = function (_TiledMap) {
 
     _classCallCheck(this, Playground);
 
-    console.log(PIXI.loader.resources['level' + level]);
-
     var _this = _possibleConstructorReturn(this, (Playground.__proto__ || Object.getPrototypeOf(Playground)).call(this, world, PIXI.loader.resources['level' + level].data, PIXI.loader.resources['tileset'].data));
 
     _this.world = world;
     _this.levelCount = level;
+
+    _this.score = 0;
     return _this;
   }
 
   _createClass(Playground, [{
+    key: 'addScore',
+    value: function addScore() {
+      var score = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+
+      this.score += score;
+    }
+  }, {
     key: 'restartLevel',
     value: function restartLevel() {
       var _this2 = this;
@@ -44145,7 +44145,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '63698' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '61585' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
