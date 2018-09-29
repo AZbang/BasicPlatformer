@@ -15,8 +15,8 @@ export default class TiledMap extends PIXI.Container {
     this.mapHeight = this.map.height;
 
     let backgroundTexture = PIXI.Texture.fromImage(this.map.properties.background);
-    this.background = new PIXI.extras.TilingSprite(backgroundTexture, world.screen.width, world.screen.height);
-    this.gravity = this.map.properties.gravity;
+    this.background = new PIXI.extras.TilingSprite(backgroundTexture, world.w, world.h);
+    this.gravity = this.map.properties.gravity || 1;
 
     this.camera = new Camera(world);
     this.addChild(this.background);

@@ -80,7 +80,7 @@ export default class Player extends Entity {
   }
   onCollide(obj) {
     if(obj.name === 'dead') this.dead();
-    
+
     if(obj.name === 'jump') {
       if(this.isGround) this.dy = -45;
     }

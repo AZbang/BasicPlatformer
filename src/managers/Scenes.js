@@ -16,7 +16,7 @@ export default class Scenes extends PIXI.Container {
   }
   splash(color, time, onShow, onHide) {
     this.grph.beginFill(color);
-    this.grph.drawRect(0, 0, this.world.screen.width, this.world.screen.height);
+    this.grph.drawRect(0, 0, this.world.w, this.world.h);
     let tweenShow = new TWEEN.Tween(this.grph)
       .to({alpha: 1}, time/2)
       .onComplete(() => onShow && onShow())

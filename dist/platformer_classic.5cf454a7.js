@@ -42643,7 +42643,7 @@ var Camera = function (_PIXI$Container) {
 
     var _this = _possibleConstructorReturn(this, (Camera.__proto__ || Object.getPrototypeOf(Camera)).call(this));
 
-    _this.position.set(world.screen.width / 2, world.screen.height / 2);
+    _this.position.set(world.w / 2, world.h / 2);
     return _this;
   }
 
@@ -43717,8 +43717,8 @@ var TiledMap = function (_PIXI$Container) {
     _this.mapHeight = _this.map.height;
 
     var backgroundTexture = PIXI.Texture.fromImage(_this.map.properties.background);
-    _this.background = new PIXI.extras.TilingSprite(backgroundTexture, world.screen.width, world.screen.height);
-    _this.gravity = _this.map.properties.gravity;
+    _this.background = new PIXI.extras.TilingSprite(backgroundTexture, world.w, world.h);
+    _this.gravity = _this.map.properties.gravity || 1;
 
     _this.camera = new _Camera2.default(world);
     _this.addChild(_this.background);
@@ -43869,23 +43869,20 @@ var Menu = function (_TiledMap) {
     _this.world = world;
 
     _this.label = new PIXI.Text('START GAME!', {
-      fontFamily: 'Bebas Neue',
-      fontSize: 72,
-      fill: 0xff1010,
+      fontFamily: 'Comic Sans MS',
+      fontSize: 42,
+      fill: 0x000000,
       align: 'center'
     });
     _this.label.anchor.set(.5);
-    _this.label.x = _this.world.screen.width / 2;
-    _this.label.y = 300;
+    _this.label.x = _this.world.w / 2;
+    _this.label.y = 400;
     _this.label.interactive = true;
     _this.label.cursor = 'pointer';
     _this.label.pointertap = function () {
       _this.world.scenes.set('playground', _this.world.storage.get('level'));
     };
     _this.addChild(_this.label);
-
-    _this.camera.setPosition({ x: _this.world.screen.width, y: _this.world.screen.height - 200 });
-    _this.camera.zoom(.8, 1000);
     return _this;
   }
 
@@ -44044,7 +44041,7 @@ var Scenes = function (_PIXI$Container) {
     key: 'splash',
     value: function splash(color, time, onShow, onHide) {
       this.grph.beginFill(color);
-      this.grph.drawRect(0, 0, this.world.screen.width, this.world.screen.height);
+      this.grph.drawRect(0, 0, this.world.w, this.world.h);
       var tweenShow = new _tween2.default.Tween(this.grph).to({ alpha: 1 }, time / 2).onComplete(function () {
         return onShow && onShow();
       }).start();
@@ -44162,15 +44159,38 @@ var World = function (_PIXI$Application) {
     document.body.appendChild(_this.view);
     PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
+    _this.resolution = null;
+    _this.w = 1920;
+    _this.h = 980;
+
     _this.scenes = new _Scenes2.default(_this);
     _this.storage = new _Storage2.default(_this);
     _this.ticker.add(function (dt) {
       return _this.update(dt);
     });
+    _this.resize();
+    _this._bindEvents();
     return _this;
   }
 
   _createClass(World, [{
+    key: '_bindEvents',
+    value: function _bindEvents() {
+      var _this2 = this;
+
+      window.addEventListener('resize', function () {
+        return _this2.resize(_this2);
+      });
+    }
+  }, {
+    key: 'resize',
+    value: function resize() {
+      this.resolution = window.innerWidth / this.w;
+      this.renderer.resize(window.innerWidth, this.h * this.resolution);
+      this.view.style.marginTop = window.innerHeight / 2 - this.h * this.resolution / 2 + 'px';
+      this.stage.scale.set(this.resolution);
+    }
+  }, {
     key: 'update',
     value: function update(dt) {
       this.scenes.update(dt);
@@ -44226,7 +44246,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '65067' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '52394' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 

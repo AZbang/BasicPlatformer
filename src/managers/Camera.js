@@ -4,7 +4,7 @@ import TWEEN from '@tweenjs/tween.js';
 export default class Camera extends PIXI.Container {
   constructor(world) {
     super();
-    this.position.set(world.screen.width/2, world.screen.height/2);
+    this.position.set(world.w/2, world.h/2);
   }
   setPosition(point) {
     this.pivot.set(point.x, point.y);
