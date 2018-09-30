@@ -57,7 +57,7 @@ Adjusts the position of objects of the `entity` type relative to the curved surf
 
 * **CameraZoom**<br>
 A trigger that handles a Player to control camera zoom.<br>
-> **Properties:**<br>
+**Properties:**<br>
 zoom = 1 (default)
 
 * **Dead**<br> Collision trigger to kill entity
@@ -68,28 +68,28 @@ zoom = 1 (default)
 * **Player**<br>
 
 * **Slime**<br> A little slime moves right and left on ground. Kills the player<br>
-> **Properties:**<br>
+**Properties:**<br>
 path: 3 (the number of tiles that an enemy can pass in one direction)<br>
 dir: -1 (start direction enemy)<br>
 speed: 4
 
-* **Bee**<br> A little bee flies right and left in the air, swaying along a sine wave. Kills the player
-> **Properties:**<br>
+* **Bee**<br> A little bee flies right and left in the air, swaying along a sine wave. Kills the player<br>
+**Properties:**<br>
 path: 3 (the number of tiles that an enemy can pass in one direction)<br>
-dir: -1<br>
+dir: -1 (start direction enemy)<br>
 speed: 4
 
 
-* **Coin**<br>Coins that the player collects
-> **Properties:**<br>
+* **Coin**<br>Coins that the player collects<br>
+**Properties:**<br>
 score: 10 (default)
 
 * **Jumper**<br>
-Sets the negative vector in Y coordinate for Player
-> **Properties:**<br>
-zoom = 1 (default)
+Sets the negative vector in Y coordinate for Player<br>
+**Properties:**<br>
+power: 45 (default)
 
-## Credits
+## Information
 * **Code by Andrey Zhevlakov**
 * **Free game asset by Kenney**
 * **LICENSE MIT**
