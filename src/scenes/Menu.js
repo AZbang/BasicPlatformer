@@ -15,7 +15,7 @@ export default class Menu extends TiledMap {
     });
     this.label.anchor.set(.5);
     this.label.x = this.world.w/2;
-    this.label.y = 400;
+    this.label.y = 200;
     this.label.interactive = true;
     this.label.cursor = 'pointer';
     this.label.pointertap = () => {

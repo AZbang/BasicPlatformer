@@ -95,7 +95,7 @@ export default class TiledMap extends PIXI.Container {
       alpha: data.opacity,
       rotation: data.rotation,
       frames: [tile.image],
-      properties: data.properties,
+      properties: data.properties || {},
       collider: tile.objectgroup ? tile.objectgroup.objects[0] : null
     });
     this.entities.push(entity);

@@ -1035,9 +1035,40 @@
         },
      "408":
         {
+         "animation":[
+                {
+                 "duration":100,
+                 "tileid":408
+                },
+                {
+                 "duration":100,
+                 "tileid":409
+                }],
          "image":"spring.png",
          "imageheight":128,
-         "imagewidth":128
+         "imagewidth":128,
+         "objectgroup":
+            {
+             "draworder":"index",
+             "name":"",
+             "objects":[
+                    {
+                     "height":67,
+                     "id":2,
+                     "name":"",
+                     "rotation":0,
+                     "type":"",
+                     "visible":true,
+                     "width":127,
+                     "x":-1,
+                     "y":61
+                    }],
+             "opacity":1,
+             "type":"objectgroup",
+             "visible":true,
+             "x":0,
+             "y":0
+            }
         },
      "409":
         {

@@ -29,7 +29,7 @@ export default class Entity extends GraphicSprite {
   updateEntity(dt) {
     this.x = this.body.x-this.offsetBody.x+this.width/2;
     this.y = this.body.y-this.offsetBody.y+this.height/2;
-    
+
     if(this.isGravity) this.dy += this.map.gravity*dt;
 
     this.body.x += this.dx*dt;
@@ -94,8 +94,8 @@ export default class Entity extends GraphicSprite {
         else if(obj.name === 'slopeLeft' && this.isSolid) {
           let dtX = Math.abs(obj.x-(this.body.x+this.body.width));
           let dtY = obj.height*dtX/obj.width;
-          if(this.body.y > obj.y+dtY-this.body.height-20) {
-            this.body.y = obj.y+dtY-this.body.height-20;
+          if(this.body.y > obj.y+dtY-this.body.height) {
+            this.body.y = obj.y+dtY-this.body.height;
             this.isGround = true;
             this.dy = 0;
           }

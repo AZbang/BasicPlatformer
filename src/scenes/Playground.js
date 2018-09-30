@@ -9,9 +9,19 @@ export default class Playground extends TiledMap {
     this.levelCount = level;
 
     this.score = 0;
+    this.scoreText = new PIXI.Text('SCORE: 0', {
+      fontFamily: 'Comic Sans MS',
+      fontSize: 42,
+      fill: 0x000000,
+      align: 'center'
+    });
+    this.scoreText.x = 50;
+    this.scoreText.y = 100;
+    this.addChild(this.scoreText)
   }
   addScore(score=0) {
     this.score += score;
+    this.scoreText.text = 'SCORE: ' + this.score;
   }
   restartLevel() {
     this.world.scenes.splash(0xFFFFFF, 2000, () => {

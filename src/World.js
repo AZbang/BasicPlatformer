@@ -17,7 +17,7 @@ export default class World extends PIXI.Application {
 
     this.resolution = null;
     this.w = 1920;
-    this.h = 980;
+    this.h = 700;
 
     this.scenes = new Scenes(this);
     this.storage = new Storage(this);

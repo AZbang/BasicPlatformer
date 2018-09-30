@@ -481,6 +481,13 @@
  </tile>
  <tile id="408">
   <image width="128" height="128" source="sprites/spring.png"/>
+  <objectgroup draworder="index">
+   <object id="2" x="-1" y="61" width="127" height="67"/>
+  </objectgroup>
+  <animation>
+   <frame tileid="408" duration="100"/>
+   <frame tileid="409" duration="100"/>
+  </animation>
  </tile>
  <tile id="409">
   <image width="128" height="128" source="sprites/sprung.png"/>

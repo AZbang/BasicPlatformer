@@ -42924,8 +42924,8 @@ var Entity = function (_GraphicSprite) {
           } else if (obj.name === 'slopeLeft' && this.isSolid) {
             var _dtX = Math.abs(obj.x - (this.body.x + this.body.width));
             var _dtY = obj.height * _dtX / obj.width;
-            if (this.body.y > obj.y + _dtY - this.body.height - 20) {
-              this.body.y = obj.y + _dtY - this.body.height - 20;
+            if (this.body.y > obj.y + _dtY - this.body.height) {
+              this.body.y = obj.y + _dtY - this.body.height;
               this.isGround = true;
               this.dy = 0;
             }
@@ -43628,6 +43628,56 @@ var Slime = function (_Entity) {
 }(_Entity3.default);
 
 exports.default = Slime;
+},{"./Entity":"src\\objects\\Entity.js"}],"src\\objects\\Jumper.js":[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _Entity2 = require('./Entity');
+
+var _Entity3 = _interopRequireDefault(_Entity2);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Jumper = function (_Entity) {
+  _inherits(Jumper, _Entity);
+
+  function Jumper(map, data) {
+    _classCallCheck(this, Jumper);
+
+    var _this = _possibleConstructorReturn(this, (Jumper.__proto__ || Object.getPrototypeOf(Jumper)).call(this, map, data));
+
+    _this.gotoAndStop(0);
+    _this.power = data.properties.power || 45;
+    return _this;
+  }
+
+  _createClass(Jumper, [{
+    key: 'updateBehavior',
+    value: function updateBehavior() {}
+  }, {
+    key: 'onCollide',
+    value: function onCollide(obj) {
+      if (obj.name === 'player' && !obj.isGround) {
+        obj.dy = -this.power;
+      }
+    }
+  }]);
+
+  return Jumper;
+}(_Entity3.default);
+
+exports.default = Jumper;
 },{"./Entity":"src\\objects\\Entity.js"}],"src\\objects\\index.js":[function(require,module,exports) {
 'use strict';
 
@@ -43655,6 +43705,10 @@ var _Bee = require('./Bee');
 
 var _Bee2 = _interopRequireDefault(_Bee);
 
+var _Jumper = require('./Jumper');
+
+var _Jumper2 = _interopRequireDefault(_Jumper);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = {
@@ -43662,9 +43716,11 @@ exports.default = {
   'slime': _Slime2.default,
   'movePlatform': _MovePlatform2.default,
   'coin': _Coin2.default,
-  'bee': _Bee2.default
+  'bee': _Bee2.default,
+  'jumper': _Jumper2.default
+
 };
-},{"./Player":"src\\objects\\Player.js","./Slime":"src\\objects\\Slime.js","./MovePlatform":"src\\objects\\MovePlatform.js","./Coin":"src\\objects\\Coin.js","./Bee":"src\\objects\\Bee.js"}],"src\\managers\\TiledMap.js":[function(require,module,exports) {
+},{"./Player":"src\\objects\\Player.js","./Slime":"src\\objects\\Slime.js","./MovePlatform":"src\\objects\\MovePlatform.js","./Coin":"src\\objects\\Coin.js","./Bee":"src\\objects\\Bee.js","./Jumper":"src\\objects\\Jumper.js"}],"src\\managers\\TiledMap.js":[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -43809,7 +43865,7 @@ var TiledMap = function (_PIXI$Container) {
         name: data.name,
         x: data.x || 0,
         y: data.y || 0
-      }, _defineProperty(_ref, 'name', data.name), _defineProperty(_ref, 'width', data.width), _defineProperty(_ref, 'height', data.height), _defineProperty(_ref, 'alpha', data.opacity), _defineProperty(_ref, 'rotation', data.rotation), _defineProperty(_ref, 'frames', [tile.image]), _defineProperty(_ref, 'properties', data.properties), _defineProperty(_ref, 'collider', tile.objectgroup ? tile.objectgroup.objects[0] : null), _ref));
+      }, _defineProperty(_ref, 'name', data.name), _defineProperty(_ref, 'width', data.width), _defineProperty(_ref, 'height', data.height), _defineProperty(_ref, 'alpha', data.opacity), _defineProperty(_ref, 'rotation', data.rotation), _defineProperty(_ref, 'frames', [tile.image]), _defineProperty(_ref, 'properties', data.properties || {}), _defineProperty(_ref, 'collider', tile.objectgroup ? tile.objectgroup.objects[0] : null), _ref));
       this.entities.push(entity);
       this.camera.addChild(entity);
     }
@@ -43876,7 +43932,7 @@ var Menu = function (_TiledMap) {
     });
     _this.label.anchor.set(.5);
     _this.label.x = _this.world.w / 2;
-    _this.label.y = 400;
+    _this.label.y = 200;
     _this.label.interactive = true;
     _this.label.cursor = 'pointer';
     _this.label.pointertap = function () {
@@ -43931,6 +43987,15 @@ var Playground = function (_TiledMap) {
     _this.levelCount = level;
 
     _this.score = 0;
+    _this.scoreText = new PIXI.Text('SCORE: 0', {
+      fontFamily: 'Comic Sans MS',
+      fontSize: 42,
+      fill: 0x000000,
+      align: 'center'
+    });
+    _this.scoreText.x = 50;
+    _this.scoreText.y = 100;
+    _this.addChild(_this.scoreText);
     return _this;
   }
 
@@ -43940,6 +44005,7 @@ var Playground = function (_TiledMap) {
       var score = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
 
       this.score += score;
+      this.scoreText.text = 'SCORE: ' + this.score;
     }
   }, {
     key: 'restartLevel',
@@ -44161,7 +44227,7 @@ var World = function (_PIXI$Application) {
 
     _this.resolution = null;
     _this.w = 1920;
-    _this.h = 980;
+    _this.h = 700;
 
     _this.scenes = new _Scenes2.default(_this);
     _this.storage = new _Storage2.default(_this);
@@ -44246,7 +44312,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '52394' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '63053' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
